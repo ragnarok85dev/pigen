@@ -321,7 +321,7 @@ class PersonalNameStructure(Record):
 class SourceCitation(Record):
     def __init__(self):
         self.__pointer_source_record = False       
-        # pointer to source record - preferred way
+        # pointer to source record
         self.__reference = ""
         self.__page = ""
         self.__event = ""
