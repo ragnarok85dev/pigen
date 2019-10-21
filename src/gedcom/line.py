@@ -1,4 +1,5 @@
 import re
+import gedcom
 
 gedcom_line_format = re.compile("^(?P<level>[0-9]+) ((?P<id>@[-a-zA-Z0-9]+@) )?(?P<tag>[_A-Z0-9]+)( (?P<value>.*))?$")
 
@@ -30,6 +31,12 @@ class Line(object):
                 self.__value = match[5].strip()
             else:
                 self.__value = ""
+
+    def is_last_gedcom_line(self):
+        return self.__content == '0 '+ gedcom.tags.GEDCOM_TAG_TRAILER
+    
+    def is_user_defined_tag(self):
+        return self.__tag[0:1] == '_'
 
     def get_content(self):
         return self.__content
