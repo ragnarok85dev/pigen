@@ -1,0 +1,57 @@
+2 NAME Giacomo Ricca
+3 TYPE aka
+3 NPFX Mr
+3 GIVN Giacomo
+3 NICK 'Il Grande'
+3 SPFX Frate
+3 SURN Ricca
+3 NSFX Ole'
+3 FONE [Fone1] Giacomo Ricca
+4 TYPE [Fone1] aka
+4 NPFX [Fone1] Mr
+4 GIVN [Fone1] Giacomo
+4 NICK [Fone1] 'Il Grande'
+4 SPFX [Fone1] Frate
+4 SURN [Fone1] Ricca
+4 NSFX [Fone1] Ole'
+3 FONE [Fone2] Giacomo Ricca
+4 TYPE [Fone2] aka
+4 NPFX [Fone2] Mr
+4 GIVN [Fone2] Giacomo
+4 NICK [Fone2] 'Il Grande'
+4 SPFX [Fone2] Frate
+4 SURN [Fone2] Ricca
+4 NSFX [Fone2] Ole'
+3 ROMN [Romn1] Giacomo Ricca
+4 TYPE [Romn1] aka
+4 NPFX [Romn1] Mr
+4 GIVN [Romn1] Giacomo
+4 NICK [Romn1] 'Il Grande'
+4 SPFX [Romn1] Frate
+4 SURN [Romn1] Ricca
+4 NSFX [Romn1] Ole'
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one
+3 NOTE this is a line 2
+4 CONT And this is another 2
+4 CONT And this is the last one 2
+3 SOUR @this is a reference@
+4 PAGE 88
+4 EVEN This happened
+5 ROLE At this poor guy
+4 DATA
+5 DATE 12Sep2019
+5 TEXT This is the text from source
+4 OBJE
+5 FORM bmp
+5 FILE c:\my_path\file1.bmp
+6 MEDI photo
+5 TITL This is my picture
+4 NOTE this is the note 1
+5 CONT and this is another line in note 1
+5 CONT and this is the last line in note 1
+4 NOTE this is the note 2
+5 CONT and this is another line in note 2
+5 CONT and this is the last line in note 2
+4 QUAY 2
