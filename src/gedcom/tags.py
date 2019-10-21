@@ -561,7 +561,18 @@ GEDCOM_TAG_WILL = "WILL"
 # GENEPI custom tags
 #
 INDIVIDUAL_NAME_UNKNOWN = "<Sconosciuto>"
+
 MAX_TEXT_LENGTH = 200
+
+PERSONAL_NAME_PIECES_TAGS = [GEDCOM_TAG_NAME_PREFIX,
+                             GEDCOM_TAG_GIVEN_NAME,
+                             GEDCOM_TAG_NICKNAME,
+                             GEDCOM_TAG_SURN_PREFIX,
+                             GEDCOM_TAG_SURNAME,
+                             GEDCOM_TAG_NAME_SUFFIX,
+                             GEDCOM_TAG_NOTE,
+                             GEDCOM_TAG_SOURCE]
+
 FAMILY_EVENT_STRUCTURE_TAGS = [GEDCOM_TAG_MARIAGE_ANNULMENT, 
                                 GEDCOM_TAG_CENSUS, 
                                 GEDCOM_TAG_DIVORCE, 
@@ -574,6 +585,7 @@ FAMILY_EVENT_STRUCTURE_TAGS = [GEDCOM_TAG_MARIAGE_ANNULMENT,
                                 GEDCOM_TAG_RESIDENCE,
                                 GEDCOM_TAG_EVENT,
                                 GEDCOM_TAG_MARRIAGE]
+
 INDIVIDUAL_EVENT_STRUCTURE_TAGS = [GEDCOM_TAG_BIRTH, 
                                    GEDCOM_TAG_CHRISTENING,
                                    GEDCOM_TAG_DEATH,
@@ -597,6 +609,7 @@ INDIVIDUAL_EVENT_STRUCTURE_TAGS = [GEDCOM_TAG_BIRTH,
                                    GEDCOM_TAG_GRADUATION,
                                    GEDCOM_TAG_RETIREMENT,
                                    GEDCOM_TAG_EVENT]
+
 INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS = [GEDCOM_TAG_PHYSICAL_DESCRIPTION,
                                        GEDCOM_TAG_CASTE,
                                        GEDCOM_TAG_EDUCATION,

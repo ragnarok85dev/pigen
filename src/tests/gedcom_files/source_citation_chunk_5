@@ -1,0 +1,15 @@
+3 SOUR this_is_description
+4 TEXT This is the source text
+5 CONT which continues on this new line
+4 OBJE
+5 FORM bmp
+5 FILE c:\my_path\file1.bmp
+6 MEDI photo
+5 TITL This is my picture
+4 NOTE this is the note 1
+5 CONT and this is another line in note 1
+5 CONT and this is the last line in note 1
+4 NOTE this is the note 2
+5 CONT and this is another line in note 2
+5 CONT and this is the last line in note 2
+4 QUAY 2

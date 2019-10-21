@@ -1,0 +1,14 @@
+2 PLAC Casa mia
+3 FORM NoName City
+3 FONE Ca mea
+4 TYPE user_defined_phon
+3 FONE Ca mea1
+4 TYPE user_defined_phon1
+3 ROMN Tu casa
+4 TYPE user_defined_rmn
+3 MAP
+4 LATI N18.150944
+4 LONG E168.150944
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one

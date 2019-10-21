@@ -1,0 +1,16 @@
+0 @SUBMISSION@ SUBN
+1 SUBM @SUBMITTER@
+1 FAMF NameOfFamilyFile
+1 TEMP Abreviated temple code
+1 ANCE 1
+1 DESC 1
+1 ORDI yes
+1 NOTE this is a line
+2 CONT And this is another
+2 CONT And this is the last one
+1 CHAN
+2 DATE 18-giu-2019
+3 TIME 00:01
+2 NOTE this is a line
+3 CONT And this is anoth
+3 CONT And this is the last one

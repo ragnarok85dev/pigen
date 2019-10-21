@@ -1,0 +1,15 @@
+0 @NOTE1@ NOTE This is the start of this note
+1 CONT And this is the last line
+1 REFN dunno
+2 TYPE dunno type
+1 RIN 123456
+1 CHAN
+2 DATE 1 APR 1998
+3 TIME 12:34:56.789
+2 NOTE A note
+3 CONT Note continued here. The word TEST should not be broken!
+1 SOUR @SOURCE1@
+2 PAGE 42
+2 DATA
+3 DATE BEF 1 JAN 1900
+3 TEXT a sample text

@@ -1,0 +1,7 @@
+3 SOUR this_is_description
+4 TEXT This is the source text
+5 CONT which continues on this new line
+4 NOTE this is a line
+5 CONT and this is another
+5 CONT and this is the last one
+4 QUAY 2

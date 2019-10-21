@@ -1,0 +1,12 @@
+2 REPO @ciao@
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one
+3 NOTE this is a line 1
+4 CONT And this is another 1
+4 CONT And this is the last one 1
+3 CALN 1
+4 MEDI audio
+3 CALN 2
+3 CALN 3
+4 MEDI film

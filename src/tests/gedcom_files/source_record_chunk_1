@@ -1,0 +1,15 @@
+0 @SOURCE1@ SOUR
+1 DATA
+2 EVEN BIRT, CHR
+3 DATE FROM 1 JAN 1980 TO 1 FEB 1982
+3 PLAC Place
+2 AGNC Resposible agency
+2 NOTE A note about whatever
+1 AUTH Author of source
+1 TITL Title of source
+1 ABBR Short title
+1 PUBL Source publication facts
+1 TEXT Citation from source
+1 REFN 123
+2 TYPE ASD
+1 RIN 123123

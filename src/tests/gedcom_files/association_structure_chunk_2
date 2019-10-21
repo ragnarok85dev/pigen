@@ -1,0 +1,10 @@
+2 ASSO @association reference@
+3 RELA Grand grandson
+3 SOUR this_is_description 1
+4 TEXT This is the source text 1
+5 CONT which continues on this new line 1
+4 QUAY 1
+3 SOUR this_is_description 2
+4 TEXT This is the source text 2
+5 CONT which continues on this new line 2
+4 QUAY 2

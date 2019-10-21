@@ -57,7 +57,7 @@ class Line(object):
         return self.__value
 
     def get_line_content(self):
-        return self.__line_content
+        return self.__content
 
     def set_content(self, value):
         self.__content = value
@@ -78,7 +78,7 @@ class Line(object):
         self.__value = value
 
     def set_line_content(self, value):
-        self.__line_content = value
+        self.__content = value
 
     def del_content(self):
         del self.__content
@@ -99,13 +99,13 @@ class Line(object):
         del self.__value
 
     def del_line_content(self):
-        del self.__line_content
+        del self.__content
         
     def __str__(self):
-        return self.__line_content
+        return self.__content
 
     def __repr__(self):
-        return self.__line_content
+        return self.__content
     
     content = property(get_content, set_content, del_content, "content's docstring")
     gedcom_index = property(get_gedcom_index, set_gedcom_index, del_gedcom_index, "gedcom_index's docstring")

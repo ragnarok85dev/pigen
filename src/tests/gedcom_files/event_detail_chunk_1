@@ -1,0 +1,46 @@
+2 TYPE Evento
+2 DATE 17Dec1985
+2 PLAC Casa mia
+3 FORM NoName City
+3 FONE Ca mea
+4 TYPE user_defined_phon
+3 FONE Ca mea1
+4 TYPE user_defined_phon1
+3 ROMN Tu casa
+4 TYPE user_defined_rmn
+3 MAP
+4 LATI N18.150944
+4 LONG E168.150944
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one
+2 ADDR
+3 ADR1 Via Dante 52
+3 CITY Civezza
+2 AGNC This agency
+2 RELI No religion
+2 CAUS causa
+2 RESN non so
+2 NOTE this is a line
+3 CONT And this is another
+3 CONT And this is the last one
+2 SOUR @this is a reference@
+3 PAGE 88
+3 EVEN This happened
+4 ROLE At this poor guy
+3 DATA
+4 DATE 12Sep2019
+4 TEXT This is the text from source
+3 OBJE
+4 FORM bmp
+4 FILE c:\my_path\file1.bmp
+5 MEDI photo
+4 TITL This is my picture
+3 NOTE this is the note 1
+4 CONT and this is another line in note 1
+4 CONT and this is the last line in note 1
+3 NOTE this is the note 2
+4 CONT and this is another line in note 2
+3 QUAY 2
+2 OBJE @reference1@
+2 OBJE @reference2@
