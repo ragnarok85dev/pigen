@@ -121,11 +121,12 @@ class Record():
     def __init__(self):
         pass
     
-    def get_relevant_lines(self, gedcom_lines, flat_record = False):
+    def get_relevant_lines(self, gedcom_lines, valid_top_level_tags = None):
         '''
         Return a subset of GEDCOM lines belonging to the structure starting in gedcom_lines[0]
         :param gedcom_lines: list of GEDCOM lines containing the record
-        :param flat_record: if the GEDCOM structure does not have a hierarchical structure of levels (e.g. ADDRESS_STRUCTURE) 
+        :param valid_top_level_tags: if the GEDCOM structure does not have a hierarchical structure of levels (e.g. ADDRESS_STRUCTURE)
+                                     then this is a list of valid top level tags (e.g.['ADDR', 'PHON', 'EMAIL', 'FAX', 'WWW'] ) 
         '''
         
         # TODO: restructur into a more pythonic fashion
@@ -133,7 +134,7 @@ class Record():
         if gedcom_lines and len(gedcom_lines)>0:
                 element = None
                 for line in gedcom_lines[1:]:
-                    if line.level > gedcom_lines[0].level or (flat_record and line.level == gedcom_lines[0].level):
+                    if line.level > gedcom_lines[0].level or (valid_top_level_tags and line.tag in valid_top_level_tags and line.level == gedcom_lines[0].level):
                         element = line
                     else:
                         break
@@ -320,7 +321,8 @@ class AddressStructure(Record):
         super().__init__()
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = super().get_relevant_lines(gedcom_lines, True)
+        valid_top_level_tags = [gedcom.tags.GEDCOM_TAG_ADDRESS, gedcom.tags.GEDCOM_TAG_PHONE, gedcom.tags.GEDCOM_TAG_EMAIL, gedcom.tags.GEDCOM_TAG_FAX, gedcom.tags.GEDCOM_TAG_WEB]
+        relevant_lines = super().get_relevant_lines(gedcom_lines, valid_top_level_tags)
         index = 0
         while index < len(relevant_lines):
             line = gedcom_lines[index]
@@ -420,7 +422,15 @@ class EventDetail(Record):
     def __init__(self):
         self._type = ""
         self._date = ""
-        self._place = None
+        self._place_name = ""
+        self._place_hierarchy = ""
+#         self._place_phonetic_variation = ""
+#         self._place_phonetic_variation_type = ""
+#         self._place_romanized_variation = ""
+#         self._place_romanized_variation_type = ""
+        self._place_latitude = ""
+        self._place_longitude = ""
+        self._place_notes = []
         self._address = None
         self._responsible_agency = ""
         self._religious_affiliation = ""
@@ -432,23 +442,47 @@ class EventDetail(Record):
         super().__init__()
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        valid_top_level_tags = [gedcom.tags.GEDCOM_TAG_TYPE, 
+                                gedcom.tags.GEDCOM_TAG_DATE, 
+                                gedcom.tags.GEDCOM_TAG_PLACE, 
+                                gedcom.tags.GEDCOM_TAG_ADDRESS, 
+                                gedcom.tags.GEDCOM_TAG_AGENCY,
+                                gedcom.tags.GEDCOM_TAG_RELIGION,
+                                gedcom.tags.GEDCOM_TAG_CAUSE,
+                                gedcom.tags.GEDCOM_TAG_RESTRICTION,
+                                gedcom.tags.GEDCOM_TAG_NOTE,
+                                gedcom.tags.GEDCOM_TAG_SOURCE,
+                                gedcom.tags.GEDCOM_TAG_OBJECT]
+        relevant_lines = super().get_relevant_lines(gedcom_lines, valid_top_level_tags)
         index = 0
         starting_level = relevant_lines[0].level
+        scope = ""
         while index < len(relevant_lines):
             line = gedcom_lines[index]
-            if line.tag == gedcom.tags.GEDCOM_TAG_TYPE:
+            if line.tag == gedcom.tags.GEDCOM_TAG_TYPE and line.level == starting_level:
                 self._type = line.value
+                scope = line.tag
             elif line.tag == gedcom.tags.GEDCOM_TAG_DATE:
-                self.__date = line.value
-#             elif line.tag == gedcom.tags.GEDCOM_TAG_PLACE:
-#                 place = PlaceStructure()
-#                 parsed_lines = place.parse_gedcom(relevant_lines[index:])
-#                 if parsed_lines:
-#                     self._place = place
-#                     index += parsed_lines
-#                     continue
+                self._date = line.value
+                scope = line.tag
+            elif line.tag == gedcom.tags.GEDCOM_TAG_PLACE:
+                self._place_name = line.value
+                scope = line.tag
+            elif line.tag == gedcom.tags.GEDCOM_TAG_FORMAT and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+                self._place_hierarchy = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_LATITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+                self._place_latitude = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_LONGITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+                self._place_longitude = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self._place_notes.append(note)
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS:
+                scope = line.tag
                 address = AddressStructure()
                 parsed_lines = address.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
@@ -456,28 +490,35 @@ class EventDetail(Record):
                     index += parsed_lines
                     continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_AGENCY:
+                scope = line.tag
                 self._responsible_agency = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_RELIGION:
+                scope = line.tag
                 self._religious_affiliation = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_CAUSE:
-                self._cause_of_event = line.value
+                scope = line.tag
+                self._cause = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_RESTRICTION:
+                scope = line.tag
                 self._restriction_notice = line.value
-            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.get_level() == starting_level:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level:
+                scope = line.tag
                 note = NoteStructure()
                 parsed_lines = note.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
                     self._notes.append(note)
                     index += parsed_lines
                     continue
-            elif line.tag == gedcom.tags.GEDCOM_TAG_SOURCE and line.get_level() == starting_level:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_SOURCE and line.level == starting_level:
+                scope = line.tag
                 source = SourceCitation()
                 parsed_lines = source.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
                     self._sources.append(source)
                     index += parsed_lines
                     continue
-            elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and line.get_level() == starting_level:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and line.level == starting_level:
+                scope = line.tag
                 multimedia = MultimediaLink()
                 parsed_lines = multimedia.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
@@ -493,8 +534,16 @@ class EventDetail(Record):
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_TYPE, self._type)
         if self._date:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_DATE, self._date)
-        if self._place:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, self._place.get_gedcom_repr(level))
+        if self._place_name:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_PLACE, self._place_name)
+        if self._place_hierarchy:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_FORMAT, self._place_hierarchy)
+        if self._place_latitude:
+            gedcom_repr = "%s\n%s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_MAP)
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_LATITUDE, self._place_latitude)
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_LONGITUDE, self._place_longitude)
+        for note in self._place_notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+1))
         if self._address:
             gedcom_repr = "%s\n%s" % (gedcom_repr, self._address.get_gedcom_repr(level))
         if self._responsible_agency:

@@ -1,7 +1,8 @@
 import unittest
 import os.path
 from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
-    SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line
+    SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line,\
+    EventDetail
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -72,6 +73,22 @@ class TestChangeDate(unittest.TestCase):
 4 CONT And this is another line is ending here."""
         self.assertEqual(expected_outcome, record.get_gedcom_repr(starting_gedcom_level), error_message)
 
+class TestEventDetail(unittest.TestCase):
+    COMPONENT_NAME = "EventDetail"
+    maxDiff = None
+    
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/event_detail_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = EventDetail()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testEventDetail1(self):
+        for i in range(1,3):
+            self.simpleCall(i)
 
 class TestLine(unittest.TestCase):
     def testFullLine(self):
