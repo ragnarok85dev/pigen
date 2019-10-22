@@ -1,18 +1,139 @@
 import gedcom.tags
 from abc import abstractclassmethod
 from gedcom.gedcom_file import split_text_for_gedcom
+import re
+
+gedcom_line_format = re.compile("^(?P<level>[0-9]+) ((?P<id>@[-a-zA-Z0-9]+@) )?(?P<tag>[_A-Z0-9]+)( (?P<value>.*))?$")
+
+class Line(object):
+    """
+    Each GEDCOM line has the following syntax:
+    gedcom_line := level + ' ' + [pointer + ' ' +] tag + [' ' + line_value]
+    where:
+        level is an integer number from 0 to 99, without leading zero
+        optional_pointer is an optional pointer followed by delim, where point has the form @alphanum@
+        tag is an alphanumeric string
+        optional_line_value is the value associated to the tag
+        terminator is carriage return and/or line feed
+        implicit delimiter of elements is the space character
+    """
+    
+    def __init__(self, line_content, index=0):
+        self.__content = line_content
+        self.__gedcom_index = index
+        match = re.match(gedcom_line_format, line_content)
+        if match:
+            self.__level = int(match[1])
+            if match[2]:
+                self.__pointer = match[2].strip()
+            else:
+                self.__pointer = ""
+            self.__tag = match[4].strip()
+            if match[5]:
+                self.__value = match[5].strip()
+            else:
+                self.__value = ""
+
+    def is_last_gedcom_line(self):
+        return self.__content == '0 '+ gedcom.tags.GEDCOM_TAG_TRAILER
+    
+    def is_user_defined_tag(self):
+        return self.__tag[0:1] == '_'
+
+    def get_content(self):
+        return self.__content
+
+    def get_gedcom_index(self):
+        return self.__gedcom_index
+
+    def get_level(self):
+        return self.__level
+
+    def get_pointer(self):
+        return self.__pointer
+
+    def get_tag(self):
+        return self.__tag
+
+    def get_value(self):
+        return self.__value
+
+    def get_line_content(self):
+        return self.__content
+
+    def set_content(self, value):
+        self.__content = value
+
+    def set_gedcom_index(self, value):
+        self.__gedcom_index = value
+
+    def set_level(self, value):
+        self.__level = value
+
+    def set_pointer(self, value):
+        self.__pointer = value
+
+    def set_tag(self, value):
+        self.__tag = value
+
+    def set_value(self, value):
+        self.__value = value
+
+    def set_line_content(self, value):
+        self.__content = value
+
+    def del_content(self):
+        del self.__content
+
+    def del_gedcom_index(self):
+        del self.__gedcom_index
+
+    def del_level(self):
+        del self.__level
+
+    def del_pointer(self):
+        del self.__pointer
+
+    def del_tag(self):
+        del self.__tag
+
+    def del_value(self):
+        del self.__value
+
+    def del_line_content(self):
+        del self.__content
+        
+    def __str__(self):
+        return self.__content
+
+    def __repr__(self):
+        return self.__content
+    
+    content = property(get_content, set_content, del_content, "content's docstring")
+    gedcom_index = property(get_gedcom_index, set_gedcom_index, del_gedcom_index, "gedcom_index's docstring")
+    level = property(get_level, set_level, del_level, "level's docstring")
+    pointer = property(get_pointer, set_pointer, del_pointer, "pointer's docstring")
+    tag = property(get_tag, set_tag, del_tag, "tag's docstring")
+    value = property(get_value, set_value, del_value, "value's docstring")
+    line_content = property(get_line_content, set_line_content, del_line_content, "line_content's docstring")
 
 class Record():
     def __init__(self):
         pass
     
-    def get_relevant_lines(self, gedcom_lines):
+    def get_relevant_lines(self, gedcom_lines, flat_record = False):
+        '''
+        Return a subset of GEDCOM lines belonging to the structure starting in gedcom_lines[0]
+        :param gedcom_lines: list of GEDCOM lines containing the record
+        :param flat_record: if the GEDCOM structure does not have a hierarchical structure of levels (e.g. ADDRESS_STRUCTURE) 
+        '''
+        
         # TODO: restructur into a more pythonic fashion
         relevant_lines = []
         if gedcom_lines and len(gedcom_lines)>0:
                 element = None
                 for line in gedcom_lines[1:]:
-                    if line.get_level() > gedcom_lines[0].get_level():
+                    if line.level > gedcom_lines[0].level or (flat_record and line.level == gedcom_lines[0].level):
                         element = line
                     else:
                         break
@@ -52,21 +173,28 @@ class Individual(Record):
         self.__user_reference_numbers = []
         self.__automated_record_id = ""
         self.__change_date = None
-        self.__note_structures = []
-        self.__source_citations = []
+        self.__notes = []
+        self.__sources = []
         self.__multimedia_links = []
         super().__init__()
     
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = super().get_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
-        for index, line in enumerate(relevant_lines):
+        index = 0
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_RESTRICTION and (line.level == 1):
-                self.__restriction_notice = line.get_value()
+                self.__restriction_notice = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_NAME and (line.level == 1):
-                self.__personal_name_structures.append(PersonalNameStructure(gedcom_lines[index:]))
+                personal_name = PersonalNameStructure()
+                parsed_lines = personal_name.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__personal_name_structures.append(personal_name)
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_SEX and (line.level == 1):
-                self.__sex = line.get_value()
+                self.__sex = line.value
 #             elif line.tag in gedcom.tags.INDIVIDUAL_EVENT_STRUCTURE_TAGS and (line.level == 1):
 #                 self.__individual_event_structures.append(IndividualEventStructure(gedcom_lines[index:]))
 #             elif line.tag in gedcom.tags.INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS and (line.level == 1): 
@@ -76,34 +204,55 @@ class Individual(Record):
 #             elif line.tag in gedcom.tags.GEDCOM_TAG_FAMILY_SPOUSE and (line.level == 1):
 #                 self.__spouse_to_family_links.append(SpouseToFamilyLink(gedcom_lines[index:]))
             elif line.tag == gedcom.tags.GEDCOM_TAG_SUBMITTER and (line.level == 1):
-                self.__submitter_records.append(line.get_value())
+                self.__submitter_records.append(line.value)
 #             elif line.tag in gedcom.tags.GEDCOM_TAG_ASSOCIATES and (line.level == 1):
 #                 self.__associations_structures.append(AssociationStructure(gedcom_lines[index:]))
             elif line.tag == gedcom.tags.GEDCOM_TAG_ALIAS and (line.level == 1):
-                self.__aliases.append(line.get_value())
+                self.__aliases.append(line.value)
             elif line.tag == gedcom.tags.GEDCOM_TAG_ANCES_INTEREST and (line.level == 1):
-                self.__interest_more_research_ancestors.append(line.get_value())
+                self.__interest_more_research_ancestors.append(line.value)
             elif line.tag == gedcom.tags.GEDCOM_TAG_DESCENDANT_INT and (line.level == 1):
-                self.__interest_more_research_descendants.append(line.get_value())
+                self.__interest_more_research_descendants.append(line.value)
             elif line.tag == gedcom.tags.GEDCOM_TAG_REC_FILE_NUMBER and (line.level == 1):
-                self.__permanent_record_file_number = line.get_value()
+                self.__permanent_record_file_number = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_ANCESTRAL_FILE_NUMBER and (line.level == 1):
-                self.__ancestral_file_number = line.get_value()
+                self.__ancestral_file_number = line.value
             elif line.tag == gedcom.tags.GEDCOM_TAG_REFERENCE and (line.level == 1):
                 if gedcom_lines[index+1].get_tag() == gedcom.tags.GEDCOM_TAG_TYPE:
                     self.__user_reference_numbers.append((gedcom_lines[index].get_value(), gedcom_lines[index+1].get_value()))
                 else:
                     self.__user_reference_numbers.append((gedcom_lines[index].get_value(), ""))
             elif line.tag == gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER and (line.level == 1):
-                self.__automated_record_id = line.get_value()
-#             elif line.tag == gedcom.tags.GEDCOM_TAG_DATE_CHANGE and (line.level == 1):
-#                 self.__change_date = ChangeDate(gedcom_lines[index:])
+                self.__automated_record_id = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_DATE_CHANGE and (line.level == 1):
+                change_date = ChangeDate()
+                parsed_lines = change_date.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__change_date = change_date
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and (line.level == 1):
-                self.__note_structures.append(NoteStructure(gedcom_lines[index:]))
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_SOURCE and (line.level == 1):
-                self.__source_citations.append(SourceCitation(gedcom_lines[index:]))
+                source = SourceCitation()
+                parsed_lines = source.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__sources.append(source)
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and (line.level == 1):
-                self.__multimedia_links.append(MultimediaLink(gedcom_lines[index:]))
+                multimedia = MultimediaLink()
+                parsed_lines = multimedia.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__multimedia_links.append(multimedia)
+                    index += parsed_lines
+                    continue
+            index += 1
         return len(relevant_lines)
     
     def get_gedcom_repr(self, level=0):
@@ -144,15 +293,225 @@ class Individual(Record):
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER, self.__automated_record_id)
         if self.__change_date:
             gedcom_repr = "%s\n%s" % (gedcom_repr, self.__change_date.get_gedcom_repr(level+1))
-        for note_structure in self.__note_structures:
+        for note_structure in self.__notes:
             gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
-        for source_citation in self.__source_citations:
+        for source_citation in self.__sources:
             gedcom_repr = "%s\n%s" % (gedcom_repr, source_citation.get_gedcom_repr(level+1))
         for multimedia_link in self.__multimedia_links:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level+1))    
         return gedcom_repr    
 
 # Substructures
+
+class AddressStructure(Record):
+    def __init__(self):
+        self.__address_line = ""
+        self.__address_line1 = ""
+        self.__address_line2 = ""
+        self.__address_line3 = ""
+        self.__address_city = ""
+        self.__address_state = ""
+        self.__address_postal_code = ""
+        self.__address_country = ""
+        self.__phone_number = []
+        self.__address_email = []
+        self.__address_fax = []
+        self.__address_web_page = []
+        super().__init__()
+    
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines, True)
+        index = 0
+        while index < len(relevant_lines):
+            line = gedcom_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS:
+                if len(self.__address_line) == 0:
+                    self.__address_line = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_CONTINUED:
+                self.__address_line = self.__address_line + "\n" + line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS_LINE1:
+                self.__address_line1 = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS_LINE2:
+                self.__address_line2 = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS_LINE3:
+                self.__address_line3 = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_CITY:
+                self.__address_city = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_STATE:
+                self.__address_state = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_POSTAL_CODE:
+                self.__address_postal_code = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_COUNTRY:
+                self.__address_country = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_PHONE:
+                self.__phone_number.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_EMAIL:
+                self.__address_email.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_FAX:
+                self.__address_fax.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_WEB:
+                self.__address_web_page.append(line.value)
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = split_text_for_gedcom(self.__address_line, gedcom.tags.GEDCOM_TAG_ADDRESS, level, gedcom.tags.MAX_TEXT_LENGTH)
+        if self.__address_line1:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_ADDRESS_LINE1, self.__address_line1)
+        if self.__address_line2:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_ADDRESS_LINE2, self.__address_line2)
+        if self.__address_line3:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_ADDRESS_LINE3, self.__address_line3)
+        if self.__address_city:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_CITY, self.__address_city)
+        if self.__address_state:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_STATE, self.__address_state)
+        if self.__address_postal_code:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_POSTAL_CODE, self.__address_postal_code)
+        if self.__address_country:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_COUNTRY, self.__address_country)
+        for line in self.__phone_number:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level, gedcom.tags.GEDCOM_TAG_PHONE, line)
+        for line in self.__address_email:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level, gedcom.tags.GEDCOM_TAG_EMAIL, line)
+        for line in self.__address_fax:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level, gedcom.tags.GEDCOM_TAG_FAX, line)
+        for line in self.__address_web_page:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level, gedcom.tags.GEDCOM_TAG_WEB, line)
+        return gedcom_repr.strip()
+
+class ChangeDate(Record):
+    def __init__(self):
+        self.__date = ""
+        self.__time = ""
+        self.__notes = []
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__date = relevant_lines[1].value
+        index = 2
+        starting_level = relevant_lines[0].level
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_TIME and line.level == starting_level+2:
+                self.__time = relevant_lines[index].value
+                index += 1
+                continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level+1:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s" % (level, gedcom.tags.GEDCOM_TAG_DATE_CHANGE)
+        gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_DATE, self.__date)
+        if self.__time:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_TIME, self.__time)
+        for note_structure in self.__notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
+        return gedcom_repr
+
+class EventDetail(Record):
+    def __init__(self):
+        self._type = ""
+        self._date = ""
+        self._place = None
+        self._address = None
+        self._responsible_agency = ""
+        self._religious_affiliation = ""
+        self._cause = ""
+        self._restriction_notice = ""
+        self._notes = []
+        self._sources = []
+        self._multimedia_links = []
+        super().__init__()
+    
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        index = 0
+        starting_level = relevant_lines[0].level
+        while index < len(relevant_lines):
+            line = gedcom_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_TYPE:
+                self._type = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_DATE:
+                self.__date = line.value
+#             elif line.tag == gedcom.tags.GEDCOM_TAG_PLACE:
+#                 place = PlaceStructure()
+#                 parsed_lines = place.parse_gedcom(relevant_lines[index:])
+#                 if parsed_lines:
+#                     self._place = place
+#                     index += parsed_lines
+#                     continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS:
+                address = AddressStructure()
+                parsed_lines = address.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self._address = address
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_AGENCY:
+                self._responsible_agency = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_RELIGION:
+                self._religious_affiliation = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_CAUSE:
+                self._cause_of_event = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_RESTRICTION:
+                self._restriction_notice = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.get_level() == starting_level:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self._notes.append(note)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_SOURCE and line.get_level() == starting_level:
+                source = SourceCitation()
+                parsed_lines = source.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self._sources.append(source)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and line.get_level() == starting_level:
+                multimedia = MultimediaLink()
+                parsed_lines = multimedia.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self._multimedia_links.append(multimedia)
+                    index += parsed_lines
+                    continue
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = ""
+        if self._type:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_TYPE, self._type)
+        if self._date:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_DATE, self._date)
+        if self._place:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self._place.get_gedcom_repr(level))
+        if self._address:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self._address.get_gedcom_repr(level))
+        if self._responsible_agency:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_AGENCY, self._responsible_agency)
+        if self._religious_affiliation:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_RELIGION, self._religious_affiliation)
+        if self._cause:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_CAUSE, self._cause)
+        if self._restriction_notice:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_RESTRICTION, self._restriction_notice)
+        for note_structure in self._notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level))
+        for source_citation in self._sources:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, source_citation.get_gedcom_repr(level))
+        for multimedia_link in self._multimedia_links:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level))
+        return gedcom_repr.strip()
 
 class MultimediaLink(Record):
     def __init__(self):
@@ -171,13 +530,13 @@ class MultimediaLink(Record):
             for line in relevant_lines:
                 tag = line.tag
                 if tag == gedcom.tags.GEDCOM_TAG_FILE:
-                    self.__multimedia_file = line.get_value()
+                    self.__multimedia_file = line.value
                 elif tag == gedcom.tags.GEDCOM_TAG_FORMAT:
-                    self.__multimedia_format = line.get_value()
+                    self.__multimedia_format = line.value
                 elif tag == gedcom.tags.GEDCOM_TAG_MEDIA:
-                    self.__multimedia_type = line.get_value()
+                    self.__multimedia_type = line.value
                 elif tag == gedcom.tags.GEDCOM_TAG_TITLE:
-                    self.__multimedia_title = line.get_value()
+                    self.__multimedia_title = line.value
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
@@ -206,10 +565,10 @@ class NoteStructure(Record):
             self.__reference = relevant_lines[0].get_value()
         else:
             for line in relevant_lines:
-                if line.get_tag() == gedcom.tags.GEDCOM_TAG_CONTINUED:
-                    self.__text += "\n" + line.get_value()
+                if line.tag == gedcom.tags.GEDCOM_TAG_CONTINUED:
+                    self.__text += "\n" + line.value
                 else:
-                    self.__text += line.get_value()
+                    self.__text += line.value
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
@@ -229,8 +588,8 @@ class PersonalNameStructure(Record):
         self.__name_piece_surname_prefix = ""
         self.__name_piece_surname = ""
         self.__name_piece_suffix = ""
-        self.__note_structures = []
-        self.__source_citations = []
+        self.__notes = []
+        self.__sources = []
         self.__phonetic_variations = []
         self.__romanized_variations = []
         super().__init__()
@@ -262,14 +621,14 @@ class PersonalNameStructure(Record):
                 note = NoteStructure()
                 parsed_lines = note.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
-                    self.__note_structures.append(note)
+                    self.__notes.append(note)
                     index += parsed_lines
                     continue
             elif tag == gedcom.tags.GEDCOM_TAG_SOURCE and level == starting_level + 1:
                 source = SourceCitation()
                 parsed_lines = source.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
-                    self.__source_citations.append(source)
+                    self.__sources.append(source)
                     index += parsed_lines
                     continue
             elif tag == gedcom.tags.GEDCOM_TAG_PHONETIC and level == starting_level + 1:
@@ -312,9 +671,9 @@ class PersonalNameStructure(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, phonetic_variation.get_gedcom_repr(level+1))
         for romanized_variation in self.__romanized_variations:
             gedcom_repr = "%s\n%s" % (gedcom_repr, romanized_variation.get_gedcom_repr(level+1))
-        for note in self.__note_structures:
+        for note in self.__notes:
             gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+1))        
-        for source in self.__source_citations:
+        for source in self.__sources:
             gedcom_repr = "%s\n%s" % (gedcom_repr, source.get_gedcom_repr(level+1))
         return gedcom_repr.strip()
 
@@ -334,7 +693,7 @@ class SourceCitation(Record):
         self.__text = ""
         # common to both options
         self.__multimedia_link = []
-        self.__note_structures = []
+        self.__notes = []
         self.__certainty_assessment = ""
         super().__init__()
     
@@ -365,44 +724,44 @@ class SourceCitation(Record):
                 note = NoteStructure()
                 parsed_lines = note.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
-                    self.__note_structures.append(note)
+                    self.__notes.append(note)
                     index += parsed_lines
                     continue
             elif tag == gedcom.tags.GEDCOM_TAG_QUALITY_OF_DATA:
-                self.__certainty_assessment = line.get_value()
+                self.__certainty_assessment = line.value
             else:
                 if self.__pointer_source_record:
                     if tag == gedcom.tags.GEDCOM_TAG_PAGE and (level == starting_level + 1):
-                        self.__page = line.get_value()
+                        self.__page = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_EVENT and (level == starting_level + 1):
-                        self.__event = line.get_value()
+                        self.__event = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_ROLE and (level == starting_level + 2):
-                        self.__event_role = line.get_value()
+                        self.__event_role = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_DATA and (level == starting_level + 1):
                         self.__data = True
                     elif tag == gedcom.tags.GEDCOM_TAG_DATE and (level == starting_level + 2):
-                        self.__data_date = line.get_value()
+                        self.__data_date = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_TEXT and (level == starting_level + 2):
-                        self.__text = line.get_value()
+                        self.__text = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONCATENATION and (level == starting_level + 3):
-                        self.__text = self.__text + line.get_value()
+                        self.__text = self.__text + line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONTINUED and (level == starting_level + 3):
-                        self.__text = self.__text + "\n" + line.get_value()
+                        self.__text = self.__text + "\n" + line.value
                     elif tag != gedcom.tags.GEDCOM_TAG_SOURCE:
                         return
                 else:
                     if tag == gedcom.tags.GEDCOM_TAG_SOURCE:
-                        self.__description = line.get_value()
+                        self.__description = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONCATENATION and (level == starting_level + 1) and (scope == gedcom.tags.GEDCOM_TAG_SOURCE):
-                        self.__description = self.__description + line.get_value()
+                        self.__description = self.__description + line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONTINUED and (level == starting_level + 1) and (scope == gedcom.tags.GEDCOM_TAG_SOURCE):
-                        self.__description = self.__description + "\n" + line.get_value()
+                        self.__description = self.__description + "\n" + line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_TEXT and (level == starting_level + 1):
-                        self.__text = line.get_value()
+                        self.__text = line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONCATENATION and (level == starting_level + 2):
-                        self.__text = self.__text + line.get_value()
+                        self.__text = self.__text + line.value
                     elif tag == gedcom.tags.GEDCOM_TAG_CONTINUED and (level == starting_level + 2):
-                        self.__text = self.__text + "\n" + line.get_value()
+                        self.__text = self.__text + "\n" + line.value
             index += 1
         return len(relevant_lines)
 
@@ -427,7 +786,7 @@ class SourceCitation(Record):
                 gedcom_repr = gedcom_repr + '\n' + gedcom.gedcom_file.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+1, gedcom.tags.MAX_TEXT_LENGTH)
         for multimedia in self.__multimedia_link:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia.get_gedcom_repr(level+1))
-        for note in self.__note_structures:
+        for note in self.__notes:
             gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+1))
         if self.__certainty_assessment:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_QUALITY_OF_DATA, self.__certainty_assessment)

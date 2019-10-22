@@ -1,8 +1,7 @@
 import unittest
-from gedcom.line import Line
 import os.path
 from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
-    SourceCitation, PersonalNameStructure
+    SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -26,6 +25,53 @@ def file_to_gedcom_lines(file_path):
 #         record = Individual(file_to_gedcom_lines(filepath))
 #         read_file = file_to_string(filepath)
 #         self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level))
+
+class TestAddressStructure(unittest.TestCase):
+    COMPONENT_NAME = "AddressStructure"
+    
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/address_structure_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = AddressStructure()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testAddressStructureSimple1(self):
+        for i in range(1, 6):
+            self.simpleCall(i)
+
+class TestChangeDate(unittest.TestCase):
+    COMPONENT_NAME = "ChangeDate"
+
+    def simpleCall(self, index, expected_outcome):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/change_date_structure_chunk_" + index)
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = ChangeDate()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        self.assertEqual(expected_outcome, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testChangeDateSimple1(self):
+        self.simpleCall("1", "2 CHAN\n3 DATE 18-giu-2019")
+
+    def testChangeDateSimple2(self):
+        self.simpleCall("2", "2 CHAN\n3 DATE 18-giu-2019\n4 TIME 00:01")
+    
+    def testChangeDate3(self):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/change_date_structure_chunk_3")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = ChangeDate()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        expected_outcome = """2 CHAN
+3 DATE 18-giu-2019
+4 TIME 00:01
+3 NOTE this is a line
+4 CONT And this is another line is ending here."""
+        self.assertEqual(expected_outcome, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
 
 class TestLine(unittest.TestCase):
     def testFullLine(self):
