@@ -2,7 +2,7 @@ import unittest
 import os.path
 from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
     SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line,\
-    EventDetail
+    EventDetail, IndividualEventDetail, IndividualEventStructure
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -88,6 +88,40 @@ class TestEventDetail(unittest.TestCase):
 
     def testEventDetail1(self):
         for i in range(1,3):
+            self.simpleCall(i)
+
+class TestIndividualEventDetail(unittest.TestCase):
+    COMPONENT_NAME = "IndividualEventDetail"
+    maxDiff = None
+     
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_event_detail_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = IndividualEventDetail()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+ 
+    def testIndividualEventDetail1(self):
+        for i in range(1,2):
+            self.simpleCall(i)
+
+class TestIndividualEventStructure(unittest.TestCase):
+    COMPONENT_NAME = "IndividualEventStructure"
+    maxDiff = None
+     
+    def simpleCall(self, index):
+        starting_gedcom_level = 1
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_event_structure_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = IndividualEventStructure()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+ 
+    def testIndividualEventStructure(self):
+        for i in range(1,4):
             self.simpleCall(i)
 
 class TestLine(unittest.TestCase):

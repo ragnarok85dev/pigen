@@ -1,0 +1,27 @@
+1 BIRT Y
+2 TYPE Evento 2
+2 DATE 17Dec1985
+2 PLAC Casa mia
+3 FORM NoName City
+3 MAP
+4 LATI N18.150944
+4 LONG E168.150944
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one
+3 NOTE this is a line
+4 CONT And this is another
+4 CONT And this is the last one
+2 ADDR
+3 ADR1 Via Dante 52
+3 CITY Civezza
+2 AGNC This agency
+2 CAUS causa
+2 RESN non so
+2 NOTE this is a line
+3 CONT And this is another
+3 CONT And this is the last one
+2 OBJE @reference1@
+2 OBJE @reference2@
+2 AGE 23
+2 FAMC @XXX@

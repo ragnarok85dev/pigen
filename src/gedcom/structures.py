@@ -129,7 +129,7 @@ class Record():
                                      then this is a list of valid top level tags (e.g.['ADDR', 'PHON', 'EMAIL', 'FAX', 'WWW'] ) 
         '''
         
-        # TODO: restructur into a more pythonic fashion
+        # TODO: restructure into a more pythonic fashion
         relevant_lines = []
         if gedcom_lines and len(gedcom_lines)>0:
                 element = None
@@ -442,18 +442,7 @@ class EventDetail(Record):
         super().__init__()
     
     def parse_gedcom(self, gedcom_lines):
-        valid_top_level_tags = [gedcom.tags.GEDCOM_TAG_TYPE, 
-                                gedcom.tags.GEDCOM_TAG_DATE, 
-                                gedcom.tags.GEDCOM_TAG_PLACE, 
-                                gedcom.tags.GEDCOM_TAG_ADDRESS, 
-                                gedcom.tags.GEDCOM_TAG_AGENCY,
-                                gedcom.tags.GEDCOM_TAG_RELIGION,
-                                gedcom.tags.GEDCOM_TAG_CAUSE,
-                                gedcom.tags.GEDCOM_TAG_RESTRICTION,
-                                gedcom.tags.GEDCOM_TAG_NOTE,
-                                gedcom.tags.GEDCOM_TAG_SOURCE,
-                                gedcom.tags.GEDCOM_TAG_OBJECT]
-        relevant_lines = super().get_relevant_lines(gedcom_lines, valid_top_level_tags)
+        relevant_lines = super().get_relevant_lines(gedcom_lines, gedcom.tags.EVENT_DETAIL_TAGS)
         index = 0
         starting_level = relevant_lines[0].level
         scope = ""
@@ -561,6 +550,88 @@ class EventDetail(Record):
         for multimedia_link in self._multimedia_links:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level))
         return gedcom_repr.strip()
+
+class IndividualEventDetail(EventDetail):
+    def __init__(self):
+        self._age_at_event = ""
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        parsed_lines = super().parse_gedcom(gedcom_lines)
+        if len(gedcom_lines) > parsed_lines and gedcom_lines[parsed_lines].tag == gedcom.tags.GEDCOM_TAG_AGE:
+            self._age_at_event = gedcom_lines[parsed_lines].value
+            parsed_lines += 1
+        return parsed_lines
+    
+    def get_gedcom_repr(self, level):
+        gedcom_repr = super().get_gedcom_repr(level)
+        if self._age_at_event:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_AGE, self._age_at_event)
+        return gedcom_repr
+
+class IndividualEventStructure(IndividualEventDetail):
+    def __init__(self):
+        self.__tag = ""
+        self.__birth_christening_yes = ""
+        self.__birth_christening_family_reference = ""
+        self.__death_yes = ""
+        self.__adopting_family_reference = ""
+        self.__adopting_parent = ""
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__tag = relevant_lines[0].tag
+        index = 0
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if self.__tag in (gedcom.tags.GEDCOM_TAG_BIRTH, gedcom.tags.GEDCOM_TAG_CHRISTENING):
+                self.__birth_christening_yes = relevant_lines[0].value
+                if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[1:])
+                    index += parsed_lines
+                    if relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
+                        self.__birth_christening_family_reference = relevant_lines[index+1].value
+                        index += 1
+            elif self.__tag == gedcom.tags.GEDCOM_TAG_DEATH:
+                self.__death_yes = relevant_lines[0].value
+                if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[1:])
+                    index += parsed_lines
+            elif self.__tag == gedcom.tags.GEDCOM_TAG_ADOPTION:
+                if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[1:])
+                    index += parsed_lines
+                    if len(relevant_lines) > index+2 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
+                        self.__adopting_family_reference = relevant_lines[index+1].value
+                        index += 1
+                        if len(relevant_lines) > index+1 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_ADOPTION:
+                            self.__adopting_parent = relevant_lines[index+1].value
+                            index += 1
+            elif self.__tag in (gedcom.tags.INDIVIDUAL_EVENT_STRUCTURE_TAGS):
+                if len(relevant_lines) >= index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[1:])
+                    index += parsed_lines
+            else:
+                return
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s" % (level, self.__tag)
+        if self.__birth_christening_yes:
+            gedcom_repr = "%s %s" % (gedcom_repr, self.__birth_christening_yes)
+        elif self.__death_yes:
+            gedcom_repr = "%s %s" % (gedcom_repr, self.__death_yes)
+        if super().get_gedcom_repr(level + 1):
+            gedcom_repr = "%s\n%s" % (gedcom_repr, super().get_gedcom_repr(level + 1))
+        if self.__birth_christening_family_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, (level + 1), gedcom.tags.GEDCOM_TAG_FAMILY_CHILD,self.__birth_christening_family_reference)
+        elif self.__adopting_family_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, (level + 1), gedcom.tags.GEDCOM_TAG_FAMILY_CHILD,self.__adopting_family_reference)
+            if self.__adopting_parent:
+                gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, (level + 2), gedcom.tags.GEDCOM_TAG_ADOPTION, self.__adopting_parent)
+        return gedcom_repr
 
 class MultimediaLink(Record):
     def __init__(self):

@@ -624,3 +624,15 @@ INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS = [GEDCOM_TAG_PHYSICAL_DESCRIPTION,
                                        GEDCOM_TAG_SOC_SEC_NUMBER,
                                        GEDCOM_TAG_TITLE,
                                        GEDCOM_TAG_FACT]
+
+EVENT_DETAIL_TAGS = [GEDCOM_TAG_TYPE,
+                     GEDCOM_TAG_DATE,
+                     GEDCOM_TAG_PLACE,
+                     GEDCOM_TAG_ADDRESS,
+                     GEDCOM_TAG_AGENCY,
+                     GEDCOM_TAG_RELIGION,
+                     GEDCOM_TAG_CAUSE,
+                     GEDCOM_TAG_RESTRICTION,
+                     GEDCOM_TAG_NOTE,
+                     GEDCOM_TAG_SOURCE,
+                     GEDCOM_TAG_OBJECT]
