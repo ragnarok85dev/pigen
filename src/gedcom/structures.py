@@ -128,7 +128,6 @@ class Record():
         :param valid_top_level_tags: if the GEDCOM structure does not have a hierarchical structure of levels (e.g. ADDRESS_STRUCTURE)
                                      then this is a list of valid top level tags (e.g.['ADDR', 'PHON', 'EMAIL', 'FAX', 'WWW'] ) 
         '''
-        
         # TODO: restructure into a more pythonic fashion
         relevant_lines = []
         if gedcom_lines and len(gedcom_lines)>0:
@@ -153,6 +152,291 @@ class Record():
     def get_gedcom_repr(self, level):
         pass
 
+class Header(Record):
+    def __init__(self):
+        super().__init__()
+        self.__source_system_id = ""
+        self.__source_system_version = ""
+        self.__source_system_name = ""
+        self.__source_system_corporate = ""
+        self.__source_system_corporate_address = None
+        self.__source_system_data = ""
+        self.__source_system_data_date = ""
+        self.__source_system_data_copyright = ""
+        self.__destination_system = ""
+        self.__transmission_date = ""
+        self.__transmission_date_time = ""
+        self.__submitter_record_reference = ""
+        self.__submission_record_reference = ""
+        self.__file_name = ""
+        self.__copyright = ""
+        self.__gedcom_version = ""
+        self.__gedcom_form = ""
+        self.__character_set = ""
+        self.__character_set_version = ""
+        self.__language = ""
+        self.__place_form = ""
+        self.__note = ""
+        super().__init__()
+    
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        scope = ""
+        index = 0
+        while index < len(relevant_lines):
+            line = gedcom_lines[index]
+            tag = line.tag
+            if tag == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_id = line.value
+                scope = gedcom.tags.GEDCOM_TAG_SOURCE
+            elif tag == gedcom.tags.GEDCOM_TAG_VERSION and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_version = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_NAME and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_name = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CORPORATE and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_corporate = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_ADDRESS and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                address = AddressStructure()
+                parsed_lines = address.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__source_system_corporate_address = address
+                    index += parsed_lines
+                    continue
+            elif tag == gedcom.tags.GEDCOM_TAG_DATA and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_data = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_DATE and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_data_date = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_COPYRIGHT and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_data_copyright = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CONTINUED and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_data_copyright = self.__source_system_data_copyright + "\n" + line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CONCATENATION and scope == gedcom.tags.GEDCOM_TAG_SOURCE:
+                self.__source_system_data_copyright = self.__source_system_data_copyright + line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_DESTINATION:
+                scope = ""
+                self.__destination_system = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_DATE:
+                scope = ""
+                self.__transmission_date = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_TIME:
+                scope = ""
+                self.__transmission_date_time = line.value    
+            elif tag == gedcom.tags.GEDCOM_TAG_SUBMITTER:
+                scope = ""
+                self.__submitter_record_reference = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_SUBMISSION:
+                scope = ""
+                self.__submission_record_reference = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_FILE:
+                scope = ""
+                self.__file_name = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_COPYRIGHT:
+                scope = ""
+                self.__copyright = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_GEDCOM:
+                scope = gedcom.tags.GEDCOM_TAG_GEDCOM
+            elif tag == gedcom.tags.GEDCOM_TAG_VERSION and scope == gedcom.tags.GEDCOM_TAG_GEDCOM:
+                self.__gedcom_version = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_FORMAT and scope == gedcom.tags.GEDCOM_TAG_GEDCOM:
+                self.__gedcom_form = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CHARACTER_SET:
+                scope = gedcom.tags.GEDCOM_TAG_CHARACTER_SET
+                self.__character_set = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_VERSION and scope == gedcom.tags.GEDCOM_TAG_CHARACTER_SET:
+                self.__character_set_version = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_LANGUAGE:
+                scope = ""
+                self.__language = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_PLACE:
+                scope = gedcom.tags.GEDCOM_TAG_PLACE
+            elif tag == gedcom.tags.GEDCOM_TAG_FORMAT and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+                self.__place_form = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_NOTE:
+                scope = gedcom.tags.GEDCOM_TAG_NOTE
+                self.__note = line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CONTINUED and scope == gedcom.tags.GEDCOM_TAG_NOTE:
+                self.__note = self.__note + "\n" + line.value
+            elif tag == gedcom.tags.GEDCOM_TAG_CONCATENATION and scope == gedcom.tags.GEDCOM_TAG_NOTE:
+                self.__note = self.__note + line.value
+            elif line.is_user_defined_tag():
+                # current implementation ignores the the user defined tags
+                record = Record()
+                parsed_lines = record.get_relevant_lines(relevant_lines[index:])
+                if parsed_lines:
+                    index += parsed_lines
+                    continue
+            index += 1
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s" % (level, gedcom.tags.GEDCOM_TAG_HEADER)
+        if self.__source_system_id:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_SOURCE, self.__source_system_id)
+        if self.__source_system_version:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_VERSION, self.__source_system_version)
+        if self.__source_system_name:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_NAME, self.__source_system_name)
+        if self.__source_system_corporate:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_CORPORATE, self.__source_system_corporate)
+        if self.__source_system_corporate_address:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self.__source_system_corporate_address.get_gedcom_repr(level+3))
+        if self.__source_system_data:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_DATA, self.__source_system_data)
+        if self.__source_system_data_date:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+3, gedcom.tags.GEDCOM_TAG_DATE, self.__source_system_data_date)
+        if self.__source_system_data_copyright:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.split_text_for_gedcom(self.__source_system_data_copyright, gedcom.tags.GEDCOM_TAG_COPYRIGHT, level+3, gedcom.tags.MAX_TEXT_LENGTH))
+        if self.__destination_system:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_DESTINATION, self.__destination_system)
+        if self.__transmission_date:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_DATE, self.__transmission_date)
+        if self.__transmission_date_time:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_TIME, self.__transmission_date_time)
+        if self.__submission_record_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_SUBMISSION, self.__submission_record_reference)    
+        if self.__submitter_record_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_SUBMITTER, self.__submitter_record_reference)
+        if self.__file_name:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_FILE, self.__file_name)
+        if self.__copyright:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_COPYRIGHT, self.__copyright)
+        gedcom_repr = "%s\n%s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_GEDCOM)
+        if self.__gedcom_version:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_VERSION, self.__gedcom_version)
+        if self.__gedcom_form:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_FORMAT, self.__gedcom_form)
+        if self.__character_set:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_CHARACTER_SET, self.__character_set)
+        if self.__character_set_version:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_VERSION, self.__character_set_version)
+        if self.__language:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_LANGUAGE, self.__language)
+        if self.__place_form:
+            gedcom_repr = "%s\n%s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_PLACE)
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_FORMAT, self.__place_form)
+        if self.__note:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.split_text_for_gedcom(self.__note, gedcom.tags.GEDCOM_TAG_NOTE, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+        return gedcom_repr
+
+class Family(Record):
+    def __init__(self):
+        self.__reference = ""
+        self.__restriction_notice = ""
+        self.__family_event_structures = []
+        self.__husband_reference = ""
+        self.__wife_reference = ""
+        self.__children_references = []
+        self.__number_children = ""
+        self.__submitter_records = []
+        self.__user_reference_numbers = []
+        self.__automated_record_id = ""
+        self.__change_date = None
+        self.__notes = []
+        self.__sources = []
+        self.__multimedia_links = []
+        super().__init__()
+    
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__reference = relevant_lines[0].pointer
+        index = 0
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_RESTRICTION and (line.level == 1):
+                self.__restriction_notice = line.value
+            elif line.tag in gedcom.tags.FAMILY_EVENT_STRUCTURE_TAGS and (line.level == 1):
+                family_event = FamilyEventStructure()
+                parsed_lines = family_event.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__family_event_structures.append(family_event)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_HUSBAND and (line.level == 1):
+                self.__husband_reference = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_WIFE and (line.level == 1):
+                self.__wife_reference = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_CHILD and (line.level == 1):
+                self.__children_references.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_CHILDREN_COUNT and (line.level == 1):
+                self.__number_children = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_SUBMITTER and (line.level == 1):
+                self.__submitter_records.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_REFERENCE and (line.level == 1):
+                if gedcom_lines[index+1].get_tag() == gedcom.tags.GEDCOM_TAG_TYPE:
+                    self.__user_reference_numbers.append((gedcom_lines[index].get_value(), gedcom_lines[index+1].get_value()))
+                else:
+                    self.__user_reference_numbers.append((gedcom_lines[index].get_value(), ""))
+            elif line.tag == gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER and (line.level == 1):
+                self.__automated_record_id = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_DATE_CHANGE and (line.level == 1):
+                change_date = ChangeDate()
+                parsed_lines = change_date.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__change_date = change_date
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and (line.level == 1):
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_SOURCE and (line.level == 1):
+                source = SourceCitation()
+                parsed_lines = source.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__sources.append(source)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and (line.level == 1):
+                multimedia = MultimediaLink()
+                parsed_lines = multimedia.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__multimedia_links.append(multimedia)
+                    index += parsed_lines
+                    continue
+            elif line.tag in (gedcom.tags.IGNORED_FAMILY_RECORD_TAGS) or line.is_user_defined_tag():
+                # current implementation ignores the structures identified by tags in IGNORED_FAMILY_RECORD_TAGS and the user defined tags
+                record = Record()
+                parsed_lines = record.get_relevant_lines(relevant_lines[index:])
+                if parsed_lines:
+                    index += parsed_lines
+                    continue
+            index += 1
+        return len(relevant_lines)
+    
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s %s" % (level, self.__reference, gedcom.tags.GEDCOM_TAG_FAMILY)
+        if self.__restriction_notice:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_RESTRICTION, self.__restriction_notice)
+        for family_event_structure in self.__family_event_structures:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, family_event_structure.get_gedcom_repr(level+1))
+        if self.__husband_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_HUSBAND, self.__husband_reference)
+        if self.__wife_reference:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_WIFE, self.__wife_reference)
+        for child_reference in self.__children_references:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_CHILD, child_reference)
+        if self.__number_children:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_CHILDREN_COUNT, self.__number_children)
+        for submitter_record_reference in self.__submitter_records:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_SUBMITTER, submitter_record_reference)
+        for user_reference_number in self.__user_reference_numbers:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REFERENCE, user_reference_number[0])
+            if user_reference_number[1]:
+                gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_TYPE, user_reference_number[1])
+        if self.__automated_record_id:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER, self.__automated_record_id)
+        if self.__change_date:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self.__change_date.get_gedcom_repr(level+1))
+        for note_structure in self.__notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
+        for source_citation in self.__sources:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, source_citation.get_gedcom_repr(level+1))
+        for multimedia_link in self.__multimedia_links:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level+1))
+        return gedcom_repr
+
 class Individual(Record):
     def __init__(self):
         self.__reference = ""
@@ -161,11 +445,9 @@ class Individual(Record):
         self.__sex = ""
         self.__event_structures = []
         self.__attribute_structures = []
-        # self.__lds_individual_ordinances = []
         self.__child_to_family_links = []
         self.__spouse_to_family_links= []
         self.__submitter_records = []
-        self.__associations_structures = []
         self.__aliases = []
         self.__interest_more_research_ancestors = []
         self.__interest_more_research_descendants = []
@@ -196,18 +478,36 @@ class Individual(Record):
                     continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_SEX and (line.level == 1):
                 self.__sex = line.value
-#             elif line.tag in gedcom.tags.INDIVIDUAL_EVENT_STRUCTURE_TAGS and (line.level == 1):
-#                 self.__individual_event_structures.append(IndividualEventStructure(gedcom_lines[index:]))
-#             elif line.tag in gedcom.tags.INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS and (line.level == 1): 
-#                 self.__individual_attribute_structures.append(IndividualAttributeStructure(gedcom_lines[index:]))
-#             elif line.tag in gedcom.tags.GEDCOM_TAG_FAMILY_CHILD and (line.level == 1):
-#                 self.__child_to_family_links.append(ChildToFamilyLink(gedcom_lines[index:]))
-#             elif line.tag in gedcom.tags.GEDCOM_TAG_FAMILY_SPOUSE and (line.level == 1):
-#                 self.__spouse_to_family_links.append(SpouseToFamilyLink(gedcom_lines[index:]))
+            elif line.tag in gedcom.tags.INDIVIDUAL_EVENT_STRUCTURE_TAGS and (line.level == 1):
+                individual_event_structure = IndividualEventStructure()
+                parsed_lines = individual_event_structure.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__event_structures.append(individual_event_structure)
+                    index += parsed_lines
+                    continue
+            elif line.tag in gedcom.tags.INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS and (line.level == 1):           
+                individual_attribute_structure = IndividualAttributeStructure()
+                parsed_lines = individual_attribute_structure.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__attribute_structures.append(individual_attribute_structure)
+                    index += parsed_lines
+                    continue
+            elif line.tag in gedcom.tags.GEDCOM_TAG_FAMILY_CHILD and (line.level == 1):               
+                child_to_family_link = ChildToFamilyLink()
+                parsed_lines = child_to_family_link.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__child_to_family_links.append(child_to_family_link)
+                    index += parsed_lines
+                    continue
+            elif line.tag in gedcom.tags.GEDCOM_TAG_FAMILY_SPOUSE and (line.level == 1):
+                spouse_to_family_link = SpouseToFamilyLink()
+                parsed_lines = spouse_to_family_link.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__spouse_to_family_links.append(spouse_to_family_link)
+                    index += parsed_lines
+                    continue
             elif line.tag == gedcom.tags.GEDCOM_TAG_SUBMITTER and (line.level == 1):
                 self.__submitter_records.append(line.value)
-#             elif line.tag in gedcom.tags.GEDCOM_TAG_ASSOCIATES and (line.level == 1):
-#                 self.__associations_structures.append(AssociationStructure(gedcom_lines[index:]))
             elif line.tag == gedcom.tags.GEDCOM_TAG_ALIAS and (line.level == 1):
                 self.__aliases.append(line.value)
             elif line.tag == gedcom.tags.GEDCOM_TAG_ANCES_INTEREST and (line.level == 1):
@@ -253,6 +553,13 @@ class Individual(Record):
                     self.__multimedia_links.append(multimedia)
                     index += parsed_lines
                     continue
+            elif line.tag in (gedcom.tags.IGNORED_INDIVIDUAL_RECORD_TAGS) or line.is_user_defined_tag():
+                # current implementation ignores the structures identified by tags in IGNORED_INDIVIDUAL_RECORD_TAGS and the user defined tags
+                record = Record()
+                parsed_lines = record.get_relevant_lines(relevant_lines[index:])
+                if parsed_lines:
+                    index += parsed_lines
+                    continue
             index += 1
         return len(relevant_lines)
     
@@ -274,8 +581,6 @@ class Individual(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, spouse_to_family_link.get_gedcom_repr(level+1))
         for submitter_records in self.__submitter_records:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_SUBMITTER, submitter_records)
-        for association_structure in self.__associations_structures:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, association_structure.get_gedcom_repr(level+1))
         for alias in self.__aliases:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_ALIAS, alias)
         for int_ances in self.__interest_more_research_ancestors:
@@ -301,6 +606,91 @@ class Individual(Record):
         for multimedia_link in self.__multimedia_links:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level+1))    
         return gedcom_repr    
+
+class Submitter(Record):
+    def __init__(self):
+        self.__reference = ""
+        self.__submitter_name = ""
+        self.__address = None
+        self.__multimedia_links = []
+        self.__language_preferences = []
+        self.__submitter_registered_rfn = ""
+        self.__automated_record_id = ""
+        self.__notes = []
+        self.__change_date = None
+        super().__init__()
+    
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__reference = relevant_lines[0].pointer
+        index = 0
+        starting_level = relevant_lines[0].level
+        while index < len(gedcom_lines):
+            line = gedcom_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_NAME and line.level == starting_level+1:
+                self.__submitter_name = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_ADDRESS and line.level == starting_level+1:
+                address = AddressStructure()
+                parsed_lines = address.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__address = address
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_OBJECT and line.level == starting_level+1:
+                multimedia = MultimediaLink()
+                parsed_lines = multimedia.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__multimedia_links.append(multimedia)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_LANGUAGE and line.level == starting_level+1:
+                self.__language_preferences.append(line.value)
+            elif line.tag == gedcom.tags.GEDCOM_TAG_REC_FILE_NUMBER and line.level == starting_level+1:
+                self.__submitter_registered_rfn = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER and line.level == starting_level+1:
+                self.__automated_record_id = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level+1:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
+            elif line.tag == gedcom.tags.GEDCOM_TAG_DATE_CHANGE:
+                change_date = ChangeDate()
+                parsed_lines = change_date.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__change_date = change_date
+                    index += parsed_lines
+                    continue
+            elif  line.is_user_defined_tag():
+                # current implementation ignores the user defined tags
+                record = Record()
+                parsed_lines = record.get_relevant_lines(relevant_lines[index:])
+                if parsed_lines:
+                    index += parsed_lines
+                    continue
+            index += 1
+        return len(relevant_lines)
+    
+    def get_gedcom_repr(self, level=0):
+        gedcom_repr = "%s %s %s" % (level, self.__reference, gedcom.tags.GEDCOM_TAG_SUBMITTER)
+        gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_NAME, self.__submitter_name)
+        if self.__address:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self.__address.get_gedcom_repr(level+1))
+        for multimedia_link in self.__multimedia_links:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level+1))
+        for language in self.__language_preferences:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_LANGUAGE, language)
+        if self.__submitter_registered_rfn:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REC_FILE_NUMBER, self.__submitter_registered_rfn)
+        if self.__automated_record_id:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REC_ID_NUMBER, self.__automated_record_id)
+        for note_structure in self.__notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
+        if self.__change_date:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, self.__change_date.get_gedcom_repr(level+1))
+        return gedcom_repr
 
 # Substructures
 
@@ -418,6 +808,45 @@ class ChangeDate(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
         return gedcom_repr
 
+class ChildToFamilyLink(Record):
+    def __init__(self):
+        self.__family_reference = ""
+        self.__pedigree = ""
+        self.__status = ""
+        self.__notes = []
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__family_reference = relevant_lines[0].value
+        index = 0
+        starting_level = relevant_lines[0].level
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_PEDIGREE and line.level == starting_level+1:
+                self.__pedigree = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_STATUS and line.level == starting_level+1:
+                self.__status = line.value
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level+1:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s %s" % (level, gedcom.tags.GEDCOM_TAG_FAMILY_CHILD, self.__family_reference)
+        if self.__pedigree:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_PEDIGREE, self.__pedigree)
+        if self.__status:
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_STATUS, self.__status)
+        for note_structure in self.__notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note_structure.get_gedcom_repr(level+1))
+        return gedcom_repr
+
 class EventDetail(Record):
     def __init__(self):
         self._type = ""
@@ -444,7 +873,8 @@ class EventDetail(Record):
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = super().get_relevant_lines(gedcom_lines, gedcom.tags.EVENT_DETAIL_TAGS)
         index = 0
-        starting_level = relevant_lines[0].level
+        if len(relevant_lines):
+            starting_level = relevant_lines[0].level
         scope = ""
         while index < len(relevant_lines):
             line = gedcom_lines[index]
@@ -457,13 +887,13 @@ class EventDetail(Record):
             elif line.tag == gedcom.tags.GEDCOM_TAG_PLACE:
                 self._place_name = line.value
                 scope = line.tag
-            elif line.tag == gedcom.tags.GEDCOM_TAG_FORMAT and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_FORMAT and scope == gedcom.tags.GEDCOM_TAG_PLACE and line.level == starting_level+1:
                 self._place_hierarchy = line.value
-            elif line.tag == gedcom.tags.GEDCOM_TAG_LATITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_LATITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE and line.level == starting_level+2:
                 self._place_latitude = line.value
-            elif line.tag == gedcom.tags.GEDCOM_TAG_LONGITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_LONGITUDE and scope == gedcom.tags.GEDCOM_TAG_PLACE and line.level == starting_level+2:
                 self._place_longitude = line.value
-            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and scope == gedcom.tags.GEDCOM_TAG_PLACE:
+            elif line.tag == gedcom.tags.GEDCOM_TAG_NOTE and scope == gedcom.tags.GEDCOM_TAG_PLACE and line.level == starting_level+1:
                 note = NoteStructure()
                 parsed_lines = note.parse_gedcom(relevant_lines[index:])
                 if parsed_lines:
@@ -551,6 +981,84 @@ class EventDetail(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level))
         return gedcom_repr.strip()
 
+class FamilyEventDetail(EventDetail):
+    def __init__(self):
+        self.__husband_age_at_event = ""
+        self.__wife_age_at_event = ""
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        valid_top_level_tags = gedcom.tags.EVENT_DETAIL_TAGS + [gedcom.tags.GEDCOM_TAG_HUSBAND, gedcom.tags.GEDCOM_TAG_WIFE]
+        relevant_lines = super().get_relevant_lines(gedcom_lines, valid_top_level_tags)
+        index = 0
+        scope = ""
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_HUSBAND:
+                scope = gedcom.tags.GEDCOM_TAG_HUSBAND
+            elif line.tag == gedcom.tags.GEDCOM_TAG_WIFE:
+                scope = gedcom.tags.GEDCOM_TAG_WIFE
+            elif line.tag == gedcom.tags.GEDCOM_TAG_AGE:
+                if scope == gedcom.tags.GEDCOM_TAG_HUSBAND:
+                    self.__husband_age_at_event = line.value
+                elif scope == gedcom.tags.GEDCOM_TAG_WIFE:
+                    self.__wife_age_at_event = line.value
+            elif line.tag in gedcom.tags.EVENT_DETAIL_TAGS:
+                parsed_lines = super().parse_gedcom(gedcom_lines[index:])
+                index += parsed_lines
+                continue
+            index += 1
+        return len(relevant_lines)
+    
+    def get_gedcom_repr(self, level):
+        gedcom_repr = ""
+        if self.__husband_age_at_event:
+            gedcom_repr = "%s\n%s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_HUSBAND)
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_AGE, self.__husband_age_at_event)
+        if self.__wife_age_at_event:
+            gedcom_repr = "%s\n%s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_WIFE)
+            gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_AGE, self.__wife_age_at_event)
+        return ("%s\n%s" % (gedcom_repr, super().get_gedcom_repr(level))).strip()
+
+class FamilyEventStructure(FamilyEventDetail):
+    def __init__(self):
+        self.__tag = ""
+        self.__married_yes = ""
+        self.__event_descriptor = ""
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__tag = relevant_lines[0].tag
+        index = 0
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if self.__tag == gedcom.tags.GEDCOM_TAG_MARRIAGE:
+                self.__married_yes = relevant_lines[0].value
+                if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[index:])
+                    index += parsed_lines
+                    continue
+            elif self.__tag == gedcom.tags.GEDCOM_TAG_EVENT:
+                self.__event_descriptor = line.value
+                if len(relevant_lines) >= index+1 and (relevant_lines[index+1].level == line.level+1):
+                    parsed_lines = super().parse_gedcom(relevant_lines[index:])
+                    index += parsed_lines
+                    continue
+            else:
+                parsed_lines = super().parse_gedcom(relevant_lines[index:])
+                index += parsed_lines
+                continue
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s" % (level, self.__tag)
+        if self.__married_yes:
+            gedcom_repr = "%s %s" % (gedcom_repr, self.__married_yes)
+        elif self.__event_descriptor:
+            gedcom_repr = "%s %s" % (gedcom_repr, self.__event_descriptor)
+        return ("%s\n%s" % (gedcom_repr, super().get_gedcom_repr(level+1))).strip()
+
 class IndividualEventDetail(EventDetail):
     def __init__(self):
         self._age_at_event = ""
@@ -567,6 +1075,55 @@ class IndividualEventDetail(EventDetail):
         gedcom_repr = super().get_gedcom_repr(level)
         if self._age_at_event:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level, gedcom.tags.GEDCOM_TAG_AGE, self._age_at_event)
+        return gedcom_repr
+
+class IndividualAttributeStructure(IndividualEventDetail):
+    def __init__(self):
+        self.__tag = ""
+        self.__content = ""
+        self.__physical_description = ""
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__tag = relevant_lines[0].tag
+        starting_level = gedcom_lines[0].level
+        index = 0
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_PHYSICAL_DESCRIPTION:
+                self.__tag = line.tag
+                self.__physical_description = line.value
+                if relevant_lines[index+1].level == starting_level + 1:
+                    for line in relevant_lines[index+1:]:
+                        if line.tag == gedcom.tags.GEDCOM_TAG_CONTINUED:
+                            self.__physical_description = self.__physical_description + '\n' + line.value
+                            index += 1
+                        elif line.tag == gedcom.tags.GEDCOM_TAG_CONCATENATION:
+                            self.__physical_description = self.__physical_description + line.value
+                            index += 1
+                        else:
+                            break
+                parsed_lines = super().parse_gedcom(relevant_lines[index+1:])
+                index += parsed_lines
+            elif line.tag in (gedcom.tags.INDIVIDUAL_ATTRIBUTE_STRUCTURE_TAGS):
+                self.__tag = line.tag
+                self.__content = line.value
+                parsed_lines = super().parse_gedcom(relevant_lines[1:])
+                index += parsed_lines
+            else:
+                return
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s" % (level, self.__tag)
+        if self.__content:
+            gedcom_repr = "%s %s" % (gedcom_repr, self.__content)
+        if self.__physical_description:
+            gedcom_repr = gedcom.gedcom_file.split_text_for_gedcom(self.__physical_description, gedcom.tags.GEDCOM_TAG_PHYSICAL_DESCRIPTION, level, gedcom.tags.MAX_TEXT_LENGTH) 
+        if super().get_gedcom_repr(level + 1):
+            gedcom_repr = "%s\n%s" % (gedcom_repr, super().get_gedcom_repr(level + 1))
         return gedcom_repr
 
 class IndividualEventStructure(IndividualEventDetail):
@@ -590,7 +1147,7 @@ class IndividualEventStructure(IndividualEventDetail):
                 if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
                     parsed_lines = super().parse_gedcom(relevant_lines[1:])
                     index += parsed_lines
-                    if relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
+                    if len(relevant_lines) >= index+2 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
                         self.__birth_christening_family_reference = relevant_lines[index+1].value
                         index += 1
             elif self.__tag == gedcom.tags.GEDCOM_TAG_DEATH:
@@ -602,7 +1159,7 @@ class IndividualEventStructure(IndividualEventDetail):
                 if len(relevant_lines) > index+1 and (relevant_lines[index+1].level == line.level+1):
                     parsed_lines = super().parse_gedcom(relevant_lines[1:])
                     index += parsed_lines
-                    if len(relevant_lines) > index+2 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
+                    if len(relevant_lines) >= index+2 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_FAMILY_CHILD:
                         self.__adopting_family_reference = relevant_lines[index+1].value
                         index += 1
                         if len(relevant_lines) > index+1 and relevant_lines[index+1].tag == gedcom.tags.GEDCOM_TAG_ADOPTION:
@@ -910,4 +1467,33 @@ class SourceCitation(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+1))
         if self.__certainty_assessment:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_QUALITY_OF_DATA, self.__certainty_assessment)
+        return gedcom_repr
+
+class SpouseToFamilyLink(Record):
+    def __init__(self):
+        self.__family_reference = ""
+        self.__notes = []
+        super().__init__()
+
+    def parse_gedcom(self, gedcom_lines):
+        relevant_lines = super().get_relevant_lines(gedcom_lines)
+        self.__family_reference = relevant_lines[0].value
+        index = 0
+        starting_level = relevant_lines[0].level
+        while index < len(relevant_lines):
+            line = relevant_lines[index]
+            if line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level+1:
+                note = NoteStructure()
+                parsed_lines = note.parse_gedcom(relevant_lines[index:])
+                if parsed_lines:
+                    self.__notes.append(note)
+                    index += parsed_lines
+                    continue
+            index += 1
+        return len(relevant_lines)
+
+    def get_gedcom_repr(self, level):
+        gedcom_repr = "%s %s %s" % (level, gedcom.tags.GEDCOM_TAG_FAMILY_SPOUSE, self.__family_reference)
+        for note in self.__notes:
+            gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+1))
         return gedcom_repr

@@ -636,3 +636,11 @@ EVENT_DETAIL_TAGS = [GEDCOM_TAG_TYPE,
                      GEDCOM_TAG_NOTE,
                      GEDCOM_TAG_SOURCE,
                      GEDCOM_TAG_OBJECT]
+
+IGNORED_INDIVIDUAL_RECORD_TAGS = [GEDCOM_TAG_ASSOCIATES,
+                                  GEDCOM_TAG_LDS_BAPTIST,
+                                  GEDCOM_TAG_LSD_CONFIRMATION,
+                                  GEDCOM_TAG_LSD_ENDOWMENT,
+                                  GEDCOM_TAG_LSD_SEALING_CHILD]
+
+IGNORED_FAMILY_RECORD_TAGS = [GEDCOM_TAG_LSD_SEALING_SPOUSE]

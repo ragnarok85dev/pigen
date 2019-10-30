@@ -1,0 +1,7 @@
+GedcomFile -> FamilyTree
+	explicit textual references into python reference (e.g. individual.spouse_to_family_link)
+GedcomFile -> GEDCOM file
+GEDCOM file -> GedcomFile
+FamilyTree -> GedcomFile
+FamilyTree -> DataBase
+DataBase -> FamilyTree

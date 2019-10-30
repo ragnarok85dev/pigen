@@ -2,7 +2,9 @@ import unittest
 import os.path
 from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
     SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line,\
-    EventDetail, IndividualEventDetail, IndividualEventStructure
+    EventDetail, IndividualEventDetail, IndividualEventStructure,\
+    IndividualAttributeStructure, ChildToFamilyLink, SpouseToFamilyLink, Header,\
+    FamilyEventDetail, FamilyEventStructure, Submitter, Family
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -17,15 +19,60 @@ def file_to_gedcom_lines(file_path):
         gedcom_lines_list.append(Line(line))
     return gedcom_lines_list
 
+class TestHeader(unittest.TestCase):
+    COMPONENT_NAME = "Header"
+    maxDiff = None
 
-# class TestIndividual(unittest.TestCase):
-#     maxDiff = None
-#     def testIndividual(self):
-#         starting_gedcom_level = 0
-#         filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_record_chunk_1")
-#         record = Individual(file_to_gedcom_lines(filepath))
-#         read_file = file_to_string(filepath)
-#         self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level))
+    def simpleCall(self, index):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/header_test_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        header = Header()
+        header.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, header.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testHeader1(self):
+        self.simpleCall(1)
+
+    def testHeader2(self):
+        input_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/header_test_2")
+        compare_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/header_test_2_compare")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + input_filepath
+        header = Header()
+        header.parse_gedcom(file_to_gedcom_lines(input_filepath))
+        compare_file = file_to_string(compare_filepath)
+        self.assertEqual(compare_file, header.get_gedcom_repr(0), error_message)
+
+class TestIndividual(unittest.TestCase):
+    maxDiff = None
+    COMPONENT_NAME = "Individual"
+     
+    def simpleCall(self, index):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_record_chunk_" + str(index))
+        record = Individual()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level))
+ 
+    def testIndividualRecord1(self):
+        self.simpleCall(1)
+ 
+    def testIndividualRecord2(self):
+        self.simpleCall(2)
+ 
+    def testIndividualRecord3(self):
+        input_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_record_chunk_3")
+        compare_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_record_chunk_3_compare")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + input_filepath
+        record = Individual()
+        record.parse_gedcom(file_to_gedcom_lines(input_filepath))
+        compare_file = file_to_string(compare_filepath)        
+        file = open("C:\\Users\\gricca4\\LocalData\\pigen\\temp.txt","w")
+        file.write(record.get_gedcom_repr(0))
+        file.close()
+        self.assertEqual(compare_file, record.get_gedcom_repr(0), error_message)
 
 class TestAddressStructure(unittest.TestCase):
     COMPONENT_NAME = "AddressStructure"
@@ -39,8 +86,25 @@ class TestAddressStructure(unittest.TestCase):
         read_file = file_to_string(filepath)
         self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
 
-    def testAddressStructureSimple1(self):
+    def testAddressStructure(self):
         for i in range(1, 6):
+            self.simpleCall(i)
+
+class TestChildToFamilyLink(unittest.TestCase):
+    COMPONENT_NAME = "ChildToFamilyLink"
+    maxDiff = None
+    
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/child_to_family_link_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        parsed_substructure = ChildToFamilyLink()
+        parsed_substructure.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, parsed_substructure.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testChildToFamilyLink(self):
+        for i in range(1, 4):
             self.simpleCall(i)
 
 class TestChangeDate(unittest.TestCase):
@@ -90,6 +154,57 @@ class TestEventDetail(unittest.TestCase):
         for i in range(1,3):
             self.simpleCall(i)
 
+class TestFamilyEventDetail(unittest.TestCase):
+    COMPONENT_NAME = "FamilyEventDetail"
+    maxDiff = None
+
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/family_event_detail_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        parsed_substructure = FamilyEventDetail()
+        parsed_substructure.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, parsed_substructure.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testFamilyEventDetail(self):
+        for i in range(1,3):
+            self.simpleCall(i)
+
+class TestFamilyEventStructure(unittest.TestCase):
+    COMPONENT_NAME = "FamilyEventStructure"
+    maxDiff = None
+    
+    def simpleCall(self, index):
+        starting_gedcom_level = 1
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/family_event_structure_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        parsed_substructure = FamilyEventStructure()
+        parsed_substructure.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, parsed_substructure.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testFamilyEventStructure(self):
+        for i in range(1,4):
+            self.simpleCall(i)
+
+class TestFamilyRecord(unittest.TestCase):
+    COMPONENT_NAME = "FamilyRecord"
+    maxDiff = None
+
+    def simpleCall(self, index):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/family_record_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Family()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testFamilyRecord(self):
+        for i in range(1,3):
+            self.simpleCall(i)
+
 class TestIndividualEventDetail(unittest.TestCase):
     COMPONENT_NAME = "IndividualEventDetail"
     maxDiff = None
@@ -105,6 +220,23 @@ class TestIndividualEventDetail(unittest.TestCase):
  
     def testIndividualEventDetail1(self):
         for i in range(1,2):
+            self.simpleCall(i)
+
+class TestIndividualAttributeStructure(unittest.TestCase):
+    COMPONENT_NAME = "IndividualAttributeStructure"
+    maxDiff = None
+     
+    def simpleCall(self, index):
+        starting_gedcom_level = 1
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/individual_attribute_structure_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = IndividualAttributeStructure()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+ 
+    def testIndividualAttributeStructure(self):
+        for i in range(1,4):
             self.simpleCall(i)
 
 class TestIndividualEventStructure(unittest.TestCase):
@@ -228,6 +360,39 @@ class TestSourceCitation(unittest.TestCase):
     def testSourceCitation(self):
         for i in range(1, 6):
             self.simpleCall(i)
+
+class TestSpouseToFamilyLink(unittest.TestCase):
+    COMPONENT_NAME = "SpouseToFamilyLink"
+    maxDiff = None
+
+    def simpleCall(self, index):
+        starting_gedcom_level = 2
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/spouse_to_family_link_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        parsed_substructure = SpouseToFamilyLink()
+        parsed_substructure.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, parsed_substructure.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testSpouseToFamilyLinkSimple1(self):
+        self.simpleCall(1)
+
+    def testSpouseToFamilyLinkSimple2(self):
+        self.simpleCall(2)
+
+class TestSubmitterRecord(unittest.TestCase):
+    COMPONENT_NAME = "SubmitterRecord"
+    maxDiff = None
+
+    def testSubmitterRecord(self):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/submitter_record_chunk_1")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Submitter()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testLine']
