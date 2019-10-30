@@ -4,7 +4,8 @@ from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
     SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line,\
     EventDetail, IndividualEventDetail, IndividualEventStructure,\
     IndividualAttributeStructure, ChildToFamilyLink, SpouseToFamilyLink, Header,\
-    FamilyEventDetail, FamilyEventStructure, Submitter, Family
+    FamilyEventDetail, FamilyEventStructure, Submitter, Family, Note, Repository,\
+    Source, Submission
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -303,6 +304,19 @@ class TestMultimediaLink(unittest.TestCase):
         for i in range(1, 3):
             self.simpleCall(i)
 
+class TestNoteRecord(unittest.TestCase):
+    COMPONENT_NAME = "NoteRecord"
+    maxDiff = None
+
+    def testNoteRecord1(self):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/note_record_chunk_1")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Note()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
 class TestPersonalNameStructure(unittest.TestCase):
     COMPONENT_NAME = "PersonalNameStructure"
     maxDiff = None
@@ -346,6 +360,19 @@ class TestNoteStructure(unittest.TestCase):
     def testNoteStructureSimple5(self):
         self.simpleCall("5", "2 NOTE this is a line\n3 CONT And this is another\n3 CONT And this is the last one")
 
+class TestRepositoryRecord(unittest.TestCase):
+    COMPONENT_NAME = "RepositoryRecord"
+    maxDiff = None
+
+    def testRepositoryRecord(self):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/repository_record_chunk_1")
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Repository()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
 class TestSourceCitation(unittest.TestCase):
     COMPONENT_NAME = "SourceCitation"
     def simpleCall(self, index):
@@ -359,6 +386,23 @@ class TestSourceCitation(unittest.TestCase):
 
     def testSourceCitation(self):
         for i in range(1, 6):
+            self.simpleCall(i)
+
+class TestSourceRecord(unittest.TestCase):
+    COMPONENT_NAME = "SourceRecord"
+    maxDiff = None
+
+    def simpleCall(self, index):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/source_record_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Source()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testSourceRecord(self):
+        for i in range(1, 3):
             self.simpleCall(i)
 
 class TestSpouseToFamilyLink(unittest.TestCase):
@@ -379,6 +423,23 @@ class TestSpouseToFamilyLink(unittest.TestCase):
 
     def testSpouseToFamilyLinkSimple2(self):
         self.simpleCall(2)
+
+class TestSubmissionRecord(unittest.TestCase):
+    COMPONENT_NAME = "SubmissionRecord"
+    maxDiff = None
+
+    def simpleCall(self, index):
+        starting_gedcom_level = 0
+        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/submission_record_chunk_" + str(index))
+        error_message = "\n" + self.COMPONENT_NAME + " unit test error parsing " + filepath
+        record = Submission()
+        record.parse_gedcom(file_to_gedcom_lines(filepath))
+        read_file = file_to_string(filepath)
+        self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
+
+    def testSubmissionRecord(self):
+        for i in range(1, 3):
+            self.simpleCall(i)
 
 class TestSubmitterRecord(unittest.TestCase):
     COMPONENT_NAME = "SubmitterRecord"
