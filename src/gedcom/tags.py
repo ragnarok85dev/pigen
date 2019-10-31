@@ -558,7 +558,7 @@ GEDCOM_TAG_WILL = "WILL"
 
 
 #
-# GENEPI custom tags
+# PIGEN custom tags and list of tags
 #
 INDIVIDUAL_NAME_UNKNOWN = "<Sconosciuto>"
 
