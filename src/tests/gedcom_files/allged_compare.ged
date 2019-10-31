@@ -636,11 +636,13 @@
 4 CONT Note continued here. The word TEST should not be broken!
 3 QUAY 3
 1 FAMC @PARENTS@
-2 PEDI adopted
+2 PEDI birth
 2 NOTE Note about the link to parents
 3 CONT Note continued here. The word TEST should not be broken!
 2 NOTE Another note about the link to parents
 3 CONT Note continued here. The word TEST should not be broken!
+1 FAMC @ADOPTIVE_PARENTS@
+2 PEDI adopted
 2 NOTE Note about the link to adoptive parents
 3 CONT Note continued here. The word TEST should not be broken!
 1 FAMS @FAMILY1@

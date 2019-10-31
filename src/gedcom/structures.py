@@ -1,9 +1,8 @@
 import gedcom.tags
 from abc import abstractclassmethod
-from gedcom.gedcom_file import split_text_for_gedcom
 import re
 
-gedcom_line_format = re.compile("^(?P<level>[0-9]+) ((?P<id>@[-a-zA-Z0-9]+@) )?(?P<tag>[_A-Z0-9]+)( (?P<value>.*))?$")
+gedcom_line_format = re.compile("^(?P<level>[0-9]+) ((?P<id>@[-a-zA-Z0-9_]+@) )?(?P<tag>[_A-Z0-9]+)( (?P<value>.*))?$")
 
 class Line(object):
     """
@@ -21,6 +20,9 @@ class Line(object):
     def __init__(self, line_content, index=0):
         self.__content = line_content
         self.__gedcom_index = index
+        self.__level = None
+        self.__pointer = ""
+        self.__value = ""
         match = re.match(gedcom_line_format, line_content)
         if match:
             self.__level = int(match[1])
@@ -35,7 +37,7 @@ class Line(object):
                 self.__value = ""
 
     def is_last_gedcom_line(self):
-        return self.__content == '0 '+ gedcom.tags.GEDCOM_TAG_TRAILER
+        return self.__content.strip() == ('0 '+ gedcom.tags.GEDCOM_TAG_TRAILER).strip()
     
     def is_user_defined_tag(self):
         return self.__tag[0:1] == '_'
@@ -263,9 +265,10 @@ class Header(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
+        return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
         gedcom_repr = "%s %s" % (level, gedcom.tags.GEDCOM_TAG_HEADER)
@@ -400,7 +403,7 @@ class Family(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -558,7 +561,7 @@ class Individual(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -626,7 +629,7 @@ class Multimedia(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_FILE:
                 self.__file = line.value
@@ -670,7 +673,7 @@ class Multimedia(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -714,7 +717,7 @@ class Note(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_NOTE and line.level == starting_level:
                 self.__text = line.value
@@ -756,7 +759,7 @@ class Note(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -792,7 +795,7 @@ class Repository(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_NAME and line.level == starting_level+1:
                 self.__repository_name = line.value
@@ -832,7 +835,7 @@ class Repository(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -908,7 +911,7 @@ class Source(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             tag = line.tag
             level = line.level
@@ -1008,7 +1011,7 @@ class Source(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -1068,7 +1071,7 @@ class Submission(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_SUBMITTER:
                 self.__submitter_reference = line.value
@@ -1103,7 +1106,7 @@ class Submission(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -1148,7 +1151,7 @@ class Submitter(Record):
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
-        while index < len(gedcom_lines):
+        while index < len(relevant_lines):
             line = gedcom_lines[index]
             if line.tag == gedcom.tags.GEDCOM_TAG_NAME and line.level == starting_level+1:
                 self.__submitter_name = line.value
@@ -1191,7 +1194,7 @@ class Submitter(Record):
                 record = Record()
                 parsed_lines = record.get_relevant_lines(relevant_lines[index:])
                 if parsed_lines:
-                    index += parsed_lines
+                    index += len(parsed_lines)
                     continue
             index += 1
         return len(relevant_lines)
@@ -1270,7 +1273,7 @@ class AddressStructure(Record):
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
-        gedcom_repr = split_text_for_gedcom(self.__address_line, gedcom.tags.GEDCOM_TAG_ADDRESS, level, gedcom.tags.MAX_TEXT_LENGTH)
+        gedcom_repr = gedcom.gedcom_file.split_text_for_gedcom(self.__address_line, gedcom.tags.GEDCOM_TAG_ADDRESS, level, gedcom.tags.MAX_TEXT_LENGTH)
         if self.__address_line1:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_ADDRESS_LINE1, self.__address_line1)
         if self.__address_line2:
@@ -1572,6 +1575,7 @@ class FamilyEventStructure(FamilyEventDetail):
                 parsed_lines = super().parse_gedcom(relevant_lines[index:])
                 index += parsed_lines
                 continue
+            index += 1
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
@@ -1617,7 +1621,7 @@ class IndividualAttributeStructure(IndividualEventDetail):
             if line.tag == gedcom.tags.GEDCOM_TAG_PHYSICAL_DESCRIPTION:
                 self.__tag = line.tag
                 self.__physical_description = line.value
-                if relevant_lines[index+1].level == starting_level + 1:
+                if len(relevant_lines) > index+1 and relevant_lines[index+1].level == starting_level + 1:
                     for line in relevant_lines[index+1:]:
                         if line.tag == gedcom.tags.GEDCOM_TAG_CONTINUED:
                             self.__physical_description = self.__physical_description + '\n' + line.value
@@ -1775,7 +1779,7 @@ class NoteStructure(Record):
         if self.__reference:
             return "%s %s %s" % (level, gedcom.tags.GEDCOM_TAG_NOTE, self.__reference)
         else:
-            return split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
+            return gedcom.gedcom_file.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
 
 class PersonalNameStructure(Record):
     def __init__(self, variation=""):
@@ -1979,7 +1983,7 @@ class SourceCitation(Record):
             if self.__data_date:
                 gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_DATE, self.__data_date)
             if self.__text:
-                gedcom_repr = "%s\n%s" % (gedcom_repr, split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+2, gedcom.tags.MAX_TEXT_LENGTH))
+                gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+2, gedcom.tags.MAX_TEXT_LENGTH))
         else:                                
             gedcom_repr = gedcom.gedcom_file.split_text_for_gedcom(self.__description, gedcom.tags.GEDCOM_TAG_SOURCE, level, gedcom.tags.MAX_TEXT_LENGTH)
             if self.__text:
