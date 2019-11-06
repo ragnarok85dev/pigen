@@ -1,12 +1,12 @@
 import unittest
 import os.path
 from gedcom.structures import Individual, NoteStructure, MultimediaLink,\
-    SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, Line,\
+    SourceCitation, PersonalNameStructure, ChangeDate, AddressStructure, \
     EventDetail, IndividualEventDetail, IndividualEventStructure,\
     IndividualAttributeStructure, ChildToFamilyLink, SpouseToFamilyLink, Header,\
     FamilyEventDetail, FamilyEventStructure, Submitter, Family, Note, Repository,\
     Source, Submission
-from gedcom.gedcom_file import GedcomFile
+from gedcom.gedcom_file import GedcomFile, GedcomLine
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -18,7 +18,7 @@ def file_to_gedcom_lines(file_path):
     with open(file_path, mode='r', encoding='utf-8-sig') as content_file:
         content = content_file.readlines()
     for line in content:
-        gedcom_lines_list.append(Line(line))
+        gedcom_lines_list.append(GedcomLine(line))
     return gedcom_lines_list
 
 class TestHeader(unittest.TestCase):
@@ -261,7 +261,7 @@ class TestIndividualEventStructure(unittest.TestCase):
 class TestLine(unittest.TestCase):
     def testFullLine(self):
         gedcom_line = "0 @pointer@ TAG This is the value"
-        line = Line(gedcom_line)
+        line = GedcomLine(gedcom_line)
         reconstructed_line = "%s %s %s %s" % (line.level, line.pointer, line.tag, line.value) 
         self.assertEqual(gedcom_line, reconstructed_line)
         self.assertEqual(0, line.level)
@@ -271,7 +271,7 @@ class TestLine(unittest.TestCase):
 
     def testOnlyTag(self):
         gedcom_line = "0 HEAD"
-        line = Line(gedcom_line)
+        line = GedcomLine(gedcom_line)
         reconstructed_line = "%s %s" % (line.level, line.tag) 
         self.assertEqual(gedcom_line, reconstructed_line)
         self.assertEqual(0, line.level)
@@ -281,7 +281,7 @@ class TestLine(unittest.TestCase):
 
     def testNoPointer(self):
         gedcom_line = "0 NOTE This is a note"
-        line = Line(gedcom_line)
+        line = GedcomLine(gedcom_line)
         reconstructed_line = "%s %s %s" % (line.level, line.tag, line.value) 
         self.assertEqual(gedcom_line, reconstructed_line)
         self.assertEqual(0, line.level)

@@ -1,7 +1,19 @@
-GedcomFile -> FamilyTree
-	explicit textual references into python reference (e.g. individual.spouse_to_family_link)
-GedcomFile -> GEDCOM file
-GEDCOM file -> GedcomFile
-FamilyTree -> GedcomFile
-FamilyTree -> DataBase
-DataBase -> FamilyTree
+populate_references(self, env: GedcomFile) per ogni structures.Record
+studiare NetworkX
+creare Genealogy basata su grafo
+GedcomFile -> Genealogy
+Genealogy -> GedcomFile
+Metodi di Genealogy
+        Individual.father -> Individual
+        Individual.mother -> Individual
+        Individual.siblings -> Individual[]
+        Individual.ancestors -> Individual[]
+        Individual.descendents -> Individual[]
+        Genealogy.add_individual
+        Genealogy.link_individual(relationship: Relationship, individual: Individual)
+        Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
+        Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
+        Genealogy.extract_branch(individuals: Individual[]) -> Genealogy
+        Genealogy.get_gedcom_repr() -> str
+        Genealogy.import_gedcom(gedcom_file_path: str)
+Visualizzazione di Genealogy
