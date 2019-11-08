@@ -33,46 +33,50 @@ def main():
 #     f.close()
 
     g = Genealogy(parsed_gedcom_file)
-    exported_gedcom = g.export_gedcom_file()
-    output_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged"
-    f = open(output_filepath, "w")
-    f.write(exported_gedcom.get_gedcom_repr())
-    f.close()
+#     exported_gedcom = g.export_gedcom_file()
+#     output_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged"
+#     f = open(output_filepath, "w")
+#     f.write(exported_gedcom.get_gedcom_repr())
+#     f.close()
 
-#     print ("Padre di " + str(g.get_individual_by_reference("@I500384@")) + ":")
-#     print (g.get_father(g.get_individual_by_reference("@I500384@"))) # Alessandro Ricca
-#     print("------------")
-#     
-#     print ("Madre di " + str(g.get_individual_by_reference("@I500384@")) + ":")
-#     print (g.get_mother(g.get_individual_by_reference("@I500384@"))) # Alessandro Ricca
-#     print("------------")
-#     
-#     print ("Fratelli/sorelle di " + str(g.get_individual_by_reference("@I500384@")) + ":")
-#     for sibling in g.get_siblings(g.get_individual_by_reference("@I500384@")): # Alessandro Ricca
-#         print (sibling)
-#     print("------------")
-#     
-#     print ("Figli di " + str(g.get_individual_by_reference("@I500048@")) + ":")
-#     for child in g.get_children(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
-#         print (child)
-#     print("------------")
-#     
-#     print ("Genitori di " + str(g.get_individual_by_reference("@I500048@")) + ":")
-#     for parent in g.get_parents(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
-#         print (parent)
-#     print("------------")
-#     
-#     print ("Antenati di " + str(g.get_individual_by_reference("@I500048@")) + ":")
-#     for ancestor in g.get_ancestors(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
-#         print (ancestor)
-#     print("------------")
-#      
-#     print ("Discendenti di " + str(g.get_individual_by_reference("@I500048@")) + ":")
-#     for descendant in g.get_descendants(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
-#         print (descendant)
-#     descendants = g.G.subgraph(g.get_descendants(g.get_individual_by_reference("@I500048@")))
-#     print("------------")   
-#     plot_tree(descendants)
+    print ("Sposo/a di " + str(g.get_individual_by_reference("@I500048@")) + ":")
+    print (g.get_spouse(g.get_individual_by_reference("@I500048@"))) # Maria Musizzano
+    print("------------")
+
+    print ("Padre di " + str(g.get_individual_by_reference("@I500384@")) + ":")
+    print (g.get_father(g.get_individual_by_reference("@I500384@"))) # Alessandro Ricca
+    print("------------")
+      
+    print ("Madre di " + str(g.get_individual_by_reference("@I500384@")) + ":")
+    print (g.get_mother(g.get_individual_by_reference("@I500384@"))) # Alessandro Ricca
+    print("------------")
+      
+    print ("Fratelli/sorelle di " + str(g.get_individual_by_reference("@I500384@")) + ":")
+    for sibling in g.get_siblings(g.get_individual_by_reference("@I500384@")): # Alessandro Ricca
+        print (sibling)
+    print("------------")
+      
+    print ("Figli di " + str(g.get_individual_by_reference("@I500048@")) + ":")
+    for child in g.get_children(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
+        print (child)
+    print("------------")
+      
+    print ("Genitori di " + str(g.get_individual_by_reference("@I500048@")) + ":")
+    for parent in g.get_parents(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
+        print (parent)
+    print("------------")
+      
+    print ("Antenati di " + str(g.get_individual_by_reference("@I500048@")) + ":")
+    for ancestor in g.get_ancestors(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
+        print (ancestor)
+    print("------------")
+       
+    print ("Discendenti di " + str(g.get_individual_by_reference("@I500048@")) + ":")
+    for descendant in g.get_descendants(g.get_individual_by_reference("@I500048@")): # Lorenzo Tagliatore
+        print (descendant)
+    descendants = g.G.subgraph(g.get_descendants(g.get_individual_by_reference("@I500048@")))
+    print("------------")
+    plot_tree(descendants)
     
 
 if __name__ == '__main__':

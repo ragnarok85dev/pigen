@@ -1,8 +1,7 @@
-import gedcom
-from gedcom.structures import Header, Submission, Individual, Family,\
-    Multimedia, Note, Repository, Source, Submitter
+import gedcom.structures as gd
 import re
 from builtins import staticmethod
+import gedcom
 
 class GedcomFormatViolationError(Exception):
     pass
@@ -188,29 +187,29 @@ class GedcomFile(object):
                 error_message = "Invalid GEDCOM line: " + line
                 raise GedcomFormatViolationError(error_message)
         # HEADER record is mandatory and must be the first one
-        self.__header = Header()
+        self.__header = gd.Header()
         parsed_lines = self.__header.parse_gedcom(gedcom_lines_list)
         for line_zero_index in [line for line in gedcom_lines_list[parsed_lines:] if line.level==0]:
             # Submission record is optional
             if line_zero_index.tag == gedcom.tags.GEDCOM_TAG_SUBMISSION:
-                record = Submission()
+                record = gd.Submission()
                 record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
                 self.__submission_record = record
                 continue
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_INDIVIDUAL:
-                record = Individual()
+                record = gd.Individual()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_FAMILY:
-                record = Family()
+                record = gd.Family()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_OBJECT:
-                record = Multimedia()
+                record = gd.Multimedia()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_NOTE:
-                record = Note()
+                record = gd.Note()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_REPOSITORY:
-                record = Repository()
+                record = gd.Repository()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_SOURCE:
-                record = Source()
+                record = gd.Source()
             elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_SUBMITTER:
-                record = Submitter()
+                record = gd.Submitter()
             elif line_zero_index.is_user_defined_tag():
                 continue
             elif line_zero_index.is_last_gedcom_line():
@@ -309,27 +308,27 @@ class GedcomFile(object):
     
     @property
     def individuals(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Individual)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Individual)}
 
     @property
     def families(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Family)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Family)}
 
     @property
     def notes(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Note)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Note)}
 
     @property
     def sources(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Source)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Source)}
 
     @property
     def objects(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Multimedia)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Multimedia)}
 
     @property
     def repositories(self):
-        return {k:v for k,v in self.__records.items() if isinstance(v, Repository)}
+        return {k:v for k,v in self.__records.items() if isinstance(v, gd.Repository)}
     
     header = property(get_header, set_header, del_header, "header's docstring")
     submission_record = property(get_submission_record, set_submission_record, del_submission_record, "submission_record's docstring")
