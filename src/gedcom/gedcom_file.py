@@ -135,6 +135,42 @@ class GedcomFile(object):
         self.__records = {}
         if filepath:
             self.parse_gedcom(filepath)
+
+    def get_header(self):
+        return self.__header
+
+
+    def get_submission_record(self):
+        return self.__submission_record
+
+
+    def get_records(self):
+        return self.__records
+
+
+    def set_header(self, value):
+        self.__header = value
+
+
+    def set_submission_record(self, value):
+        self.__submission_record = value
+
+
+    def set_records(self, value):
+        self.__records = value
+
+
+    def del_header(self):
+        del self.__header
+
+
+    def del_submission_record(self):
+        del self.__submission_record
+
+
+    def del_records(self):
+        del self.__records
+
     
     def parse_gedcom(self, file_path: str) -> int:
         '''
@@ -281,16 +317,20 @@ class GedcomFile(object):
 
     @property
     def notes(self):
-        return (i for i in self.__records if isinstance(i, Note))
+        return {k:v for k,v in self.__records.items() if isinstance(v, Note)}
 
     @property
     def sources(self):
-        return (i for i in self.__records if isinstance(i, Source))
+        return {k:v for k,v in self.__records.items() if isinstance(v, Source)}
 
     @property
     def objects(self):
-        return (i for i in self.__records if isinstance(i, Multimedia))
+        return {k:v for k,v in self.__records.items() if isinstance(v, Multimedia)}
 
     @property
     def repositories(self):
-        return (i for i in self.__records if isinstance(i, Repository))
+        return {k:v for k,v in self.__records.items() if isinstance(v, Repository)}
+    
+    header = property(get_header, set_header, del_header, "header's docstring")
+    submission_record = property(get_submission_record, set_submission_record, del_submission_record, "submission_record's docstring")
+    records = property(get_records, set_records, del_records, "records's docstring")

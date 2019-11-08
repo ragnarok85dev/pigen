@@ -17,11 +17,11 @@ class Record():
         pass
 
 class Header(Record):
-    def __init__(self):
+    def __init__(self, source_system_version="", source_system_name="", gedcom_version=""):
         super().__init__()
         self.__source_system_id = ""
-        self.__source_system_version = ""
-        self.__source_system_name = ""
+        self.__source_system_version = source_system_version
+        self.__source_system_name = source_system_name
         self.__source_system_corporate = ""
         self.__source_system_corporate_address = None
         self.__source_system_data = ""
@@ -34,7 +34,7 @@ class Header(Record):
         self.__submission_record_reference = ""
         self.__file_name = ""
         self.__copyright = ""
-        self.__gedcom_version = ""
+        self.__gedcom_version = gedcom_version
         self.__gedcom_form = ""
         self.__character_set = ""
         self.__character_set_version = ""
@@ -866,8 +866,8 @@ class Individual(Record):
         # string representation for debug purposes
         if len(self.personal_name_structures) > 0:
             if self.personal_name_structures[0].name:
-                return self.personal_name_structures[0].name.strip('/')
-            return self.personal_name_structures[0].name_piece_given + " " + self.personal_name_structures[0].name_piece_surname.strip()
+                return self.personal_name_structures[0].name.replace('/', '')
+            return (self.personal_name_structures[0].name_piece_given + " " + self.personal_name_structures[0].name_piece_surname).replace('/', '')
         return ""
     
     def get_reference(self):

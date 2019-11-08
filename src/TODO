@@ -1,14 +1,4 @@
-populate_references(self, env: GedcomFile) per ogni structures.Record
-studiare NetworkX
-creare Genealogy basata su grafo
-GedcomFile -> Genealogy
-Genealogy -> GedcomFile
 Metodi di Genealogy
-        Individual.father -> Individual
-        Individual.mother -> Individual
-        Individual.siblings -> Individual[]
-        Individual.ancestors -> Individual[]
-        Individual.descendents -> Individual[]
         Genealogy.add_individual
         Genealogy.link_individual(relationship: Relationship, individual: Individual)
         Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
