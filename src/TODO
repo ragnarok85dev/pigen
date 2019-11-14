@@ -1,9 +1,11 @@
+https://docs.python-guide.org/writing/structure/
+
 Metodi di Genealogy
-        Genealogy.add_individual
-        Genealogy.link_individual(relationship: Relationship, individual: Individual)
+        Genealogy.link_individual(relationship: Relationship, individual1: Individual, individual2: Individual)
+        Genealogy.unlink_individual(relationship: Relationship, individual1: Individual, individual2: Individual)
+        	relationship: Genitore, Partner, Figlio
         Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
         Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
-        Genealogy.extract_branch(individuals: Individual[]) -> Genealogy
-        Genealogy.get_gedcom_repr() -> str
-        Genealogy.import_gedcom(gedcom_file_path: str)
+Unit tests per Genealogy
+Gestire UID
 Visualizzazione di Genealogy

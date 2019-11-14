@@ -1,14 +1,15 @@
 import networkx as nx
 from _version import __version__
-from gedcom.structures import Individual, Header
+from gedcom.structures import Individual, Header, Family, ChildToFamilyLink,\
+    SpouseToFamilyLink
 from gedcom.gedcom_file import GedcomFile
+import re
 
 class Genealogy(object):
-    RELATIONSHIP_FAMILY_MEMBER = "Family member"
     RELATIONSHIP_FATHER = "Father"
     RELATIONSHIP_MOTHER = "Mother"
+    RELATIONSHIP_PARTNER = "Partner"
     RELATIONSHIP_CHILD = "Child"
-    RELATIONSHIP_SPOUSE = "Spouse"
 
     def __init__(self, gedcom_file = None):
         self.__G = nx.DiGraph()
@@ -18,8 +19,7 @@ class Genealogy(object):
         self.__sources = {}
         self.__objects = {}
         self.__repositories = {}
-
-        self.__spouses = {}
+        self.__spouses = {}       
         if gedcom_file:
             self.import_gedcom_file(gedcom_file)
 
@@ -30,6 +30,7 @@ class Genealogy(object):
         self.__sources = gedcom_file.sources
         self.__objects = gedcom_file.objects
         self.__repositories = gedcom_file.repositories
+
         for key, individual in gedcom_file.individuals.items():
             self.G.add_node(individual)
             if len(individual.child_to_family_links) > 0:
@@ -50,6 +51,90 @@ class Genealogy(object):
                         self.__spouses[key] = spouse
                         self.__spouses[family.husband_reference] = individual
 
+    def add_and_link_individual(self, new_individual, existing_individual, relationship):
+        self.add_individual(new_individual)
+        self.link_individual(new_individual, existing_individual, relationship)
+    
+    def link_individual(self, individual_a, individual_b, new_relationship):
+        # Links individual_a to individual_b with new_relationship
+        # TODO: implement link_individual
+        if new_relationship == self.RELATIONSHIP_FATHER and self.get_father(individual_b):
+            # if a father is already present, then return
+            return
+        elif new_relationship == self.RELATIONSHIP_MOTHER and self.get_mother(individual_b):
+            # if a mother is already present, then return
+            return
+        elif new_relationship == self.RELATIONSHIP_PARTNER and self.get_spouse(individual_b):
+            # if the same partner already present as partner, then return
+            return
+        if new_relationship in (self.RELATIONSHIP_FATHER, self.RELATIONSHIP_MOTHER):
+            if len(individual_b.child_to_family_links) > 0:
+                # if the child has already a family (e.g. only the mother was present)
+                family = self.__families[individual_b.child_to_family_links[0].family_reference]
+                # this child_to_family_links[0] is an assumption
+                if new_relationship == self.RELATIONSHIP_FATHER:
+                    family.husband_reference = individual_a.reference
+                else:
+                    family.wife_reference = individual_a.reference
+                self.G.add_edge(individual_a, individual_b, relationship = new_relationship)
+                return
+            # a new family has to be created
+            family = Family()
+            if new_relationship == self.RELATIONSHIP_FATHER:
+                family.husband_reference = individual_a.reference
+            else:
+                family.wife_reference = individual_a.reference
+            family.children_references.append(individual_b.reference)
+            family.number_children = 1
+            family_reference = self.add_family(family)
+            family.reference = family_reference
+            child_to_family_link = ChildToFamilyLink()
+            child_to_family_link.family_reference = family_reference
+            individual_b.child_to_family_links.append(child_to_family_link)
+            self.G.add_edge(individual_a, individual_b, relationship = new_relationship)
+        elif new_relationship == self.RELATIONSHIP_PARTNER:
+            if len(individual_b.spouse_to_family_links) > 0:
+                # if the individual_b has already a family
+                family = individual_b.spouse_to_family_links[0]
+                # this spouse_to_family_links[0] is an assumption
+                if (family.husband_reference and individual_a.sex == "M") or (family.wife_reference and individual_a.sex == "F"):
+                    # if this family has already a partner different from individual_a then a new family has to be created
+                    family = Family()
+                    if individual_a.sex == "M":
+                        family.husband_reference = individual_a.reference
+                        family.wife_reference = individual_b.reference
+                    elif individual_a.sex == "F":
+                        family.wife_reference = individual_a.reference
+                        family.husband_reference = individual_b.reference
+                    family_reference = self.add_family(family)
+                else:
+                    family_reference = family.reference
+                # link individual_a to the family (either new or already existing)
+                spouse_to_family_link = SpouseToFamilyLink()
+                spouse_to_family_link.family_reference = family_reference
+                individual_a.spouse_to_family_links.append(spouse_to_family_link)
+            self.__spouses[individual_a.reference] = individual_b
+            self.__spouses[individual_b.reference] = individual_a
+        elif new_relationship == self.RELATIONSHIP_CHILD:
+            pass
+    
+    def add_family(self, new_family):
+        new_family.reference = "@F" + str(self.get_next_available_gedcom_id(self.__families)) + "@"
+        self.__families[new_family.reference] = new_family
+        return new_family.reference
+    
+    def add_individual(self, new_individual):
+        new_individual.reference = "@I" + str(self.get_next_available_gedcom_id(self.__individuals)) + "@"
+        self.__individuals[new_individual.reference] = new_individual
+        self.__G.add_node(new_individual)
+        return new_individual.reference
+    
+    def get_next_available_gedcom_id(self, records):
+        # returns the first available GEDCOM ID number for a new record
+        # TODO: optimize get_next_available_gedcom_id, very slow
+        numbers = [int(re.search(r'\d+', record_id).group()) for record_id in records]
+        return next(iter([next_id for next_id in range(numbers[0], numbers[-1]+1) if next_id not in numbers]), numbers[-1]+2)
+    
     def export_gedcom_file(self) -> GedcomFile:
         gedcom_file = GedcomFile()
         gedcom_file.header = Header(__version__, "pigen", "5.5")
@@ -103,6 +188,9 @@ class Genealogy(object):
             return list(filter(None, [mother, father])) + list(self.get_ancestors(mother)) + list(self.get_ancestors(father))
         return []
 
+    def get_branch(self, individuals):
+        return self.G.subgraph(individuals)
+        
     def get_g(self):
         return self.__G
     def set_g(self, value):

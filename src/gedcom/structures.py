@@ -476,7 +476,7 @@ class Family(Record):
         self.__husband_reference = ""
         self.__wife_reference = ""
         self.__children_references = []
-        self.__number_children = ""
+        self.__number_children = 0
         self.__submitter_records = []
         self.__user_reference_numbers = []
         self.__automated_record_id = ""
@@ -839,7 +839,7 @@ class Family(Record):
     children = property(get_children, set_children, del_children, "children's docstring")
 
 class Individual(Record):
-    def __init__(self):
+    def __init__(self, first_name = "", last_name = "", date_of_birth = "", date_of_death = ""):
         self.__reference = ""
         self.__restriction_notice = ""
         self.__personal_name_structures = []
@@ -861,6 +861,25 @@ class Individual(Record):
         self.__sources = []
         self.__multimedia_links = []
         super().__init__()
+        if first_name or last_name:
+            name_structure = PersonalNameStructure()
+            name_structure.name_piece_given = first_name.strip()
+            name_structure.name_piece_surname = last_name.strip()
+            if last_name:
+                name_structure.name = first_name.strip() + " /" + name_structure.name_piece_surname + "/"
+            pass
+            self.personal_name_structures.append(name_structure)
+        if date_of_birth:
+            event_birth = IndividualEventStructure()
+            event_birth.tag = gedcom.tags.GEDCOM_TAG_BIRTH
+            event_birth._date = date_of_birth
+            self.event_structures.append(event_birth)
+        if date_of_death:
+            event_death = IndividualEventStructure()
+            event_death.tag = gedcom.tags.GEDCOM_TAG_DEATH
+            event_death._date = date_of_death
+            event_death.death_yes = "Y"
+            self.event_structures.append(event_death)
 
     def __str__(self):
         # string representation for debug purposes
@@ -1254,7 +1273,8 @@ class Individual(Record):
             gedcom_repr = "%s\n%s" % (gedcom_repr, source_citation.get_gedcom_repr(level+1))
         for multimedia_link in self.__multimedia_links:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia_link.get_gedcom_repr(level+1))    
-        return gedcom_repr    
+        return gedcom_repr
+
     reference = property(get_reference, set_reference, del_reference, "reference's docstring")
     restriction_notice = property(get_restriction_notice, set_restriction_notice, del_restriction_notice, "restriction_notice's docstring")
     personal_name_structures = property(get_personal_name_structures, set_personal_name_structures, del_personal_name_structures, "personal_name_structures's docstring")
@@ -3103,184 +3123,141 @@ class EventDetail(Record):
         super().__init__()
 
     def get_type(self):
-        return self.__type
-
+        return self._type
 
     def get_date(self):
-        return self.__date
-
+        return self._date
 
     def get_place_name(self):
-        return self.__place_name
-
+        return self._place_name
 
     def get_place_hierarchy(self):
-        return self.__place_hierarchy
-
+        return self._place_hierarchy
 
     def get_place_latitude(self):
-        return self.__place_latitude
-
+        return self._place_latitude
 
     def get_place_longitude(self):
-        return self.__place_longitude
+        return self._place_longitude
 
 
     def get_place_notes(self):
-        return self.__place_notes
+        return self._place_notes
 
 
     def get_address(self):
-        return self.__address
-
+        return self._address
 
     def get_responsible_agency(self):
-        return self.__responsible_agency
-
+        return self._responsible_agency
 
     def get_religious_affiliation(self):
-        return self.__religious_affiliation
-
+        return self._religious_affiliation
 
     def get_cause(self):
-        return self.__cause
-
+        return self._cause
 
     def get_restriction_notice(self):
-        return self.__restriction_notice
-
+        return self._restriction_notice
 
     def get_notes(self):
-        return self.__notes
-
+        return self._notes
 
     def get_sources(self):
-        return self.__sources
-
+        return self._sources
 
     def get_multimedia_links(self):
-        return self.__multimedia_links
-
+        return self._multimedia_links
 
     def set_type(self, value):
-        self.__type = value
-
+        self._type = value
 
     def set_date(self, value):
-        self.__date = value
-
+        self._date = value
 
     def set_place_name(self, value):
-        self.__place_name = value
-
+        self._place_name = value
 
     def set_place_hierarchy(self, value):
-        self.__place_hierarchy = value
-
+        self._place_hierarchy = value
 
     def set_place_latitude(self, value):
-        self.__place_latitude = value
-
+        self._place_latitude = value
 
     def set_place_longitude(self, value):
-        self.__place_longitude = value
-
+        self._place_longitude = value
 
     def set_place_notes(self, value):
-        self.__place_notes = value
-
+        self._place_notes = value
 
     def set_address(self, value):
-        self.__address = value
-
+        self._address = value
 
     def set_responsible_agency(self, value):
-        self.__responsible_agency = value
-
+        self._responsible_agency = value
 
     def set_religious_affiliation(self, value):
-        self.__religious_affiliation = value
-
+        self._religious_affiliation = value
 
     def set_cause(self, value):
-        self.__cause = value
-
+        self._cause = value
 
     def set_restriction_notice(self, value):
-        self.__restriction_notice = value
-
+        self._restriction_notice = value
 
     def set_notes(self, value):
-        self.__notes = value
-
+        self._notes = value
 
     def set_sources(self, value):
-        self.__sources = value
-
+        self._sources = value
 
     def set_multimedia_links(self, value):
-        self.__multimedia_links = value
-
+        self._multimedia_links = value
 
     def del_type(self):
-        del self.__type
-
+        del self._type
 
     def del_date(self):
-        del self.__date
-
+        del self._date
 
     def del_place_name(self):
-        del self.__place_name
-
+        del self._place_name
 
     def del_place_hierarchy(self):
-        del self.__place_hierarchy
-
+        del self._place_hierarchy
 
     def del_place_latitude(self):
-        del self.__place_latitude
-
+        del self._place_latitude
 
     def del_place_longitude(self):
-        del self.__place_longitude
-
+        del self._place_longitude
 
     def del_place_notes(self):
-        del self.__place_notes
-
+        del self._place_notes
 
     def del_address(self):
-        del self.__address
-
+        del self._address
 
     def del_responsible_agency(self):
-        del self.__responsible_agency
-
+        del self._responsible_agency
 
     def del_religious_affiliation(self):
-        del self.__religious_affiliation
-
+        del self._religious_affiliation
 
     def del_cause(self):
-        del self.__cause
-
+        del self._cause
 
     def del_restriction_notice(self):
-        del self.__restriction_notice
-
+        del self._restriction_notice
 
     def del_notes(self):
-        del self.__notes
-
+        del self._notes
 
     def del_sources(self):
-        del self.__sources
-
+        del self._sources
 
     def del_multimedia_links(self):
-        del self.__multimedia_links
-
+        del self._multimedia_links
     
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines, gedcom.tags.EVENT_DETAIL_TAGS)
@@ -3806,6 +3783,7 @@ class IndividualEventStructure(IndividualEventDetail):
             if self.__adopting_parent:
                 gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, (level + 2), gedcom.tags.GEDCOM_TAG_ADOPTION, self.__adopting_parent)
         return gedcom_repr
+
     tag = property(get_tag, set_tag, del_tag, "tag's docstring")
     birth_christening_yes = property(get_birth_christening_yes, set_birth_christening_yes, del_birth_christening_yes, "birth_christening_yes's docstring")
     birth_christening_family_reference = property(get_birth_christening_family_reference, set_birth_christening_family_reference, del_birth_christening_family_reference, "birth_christening_family_reference's docstring")
