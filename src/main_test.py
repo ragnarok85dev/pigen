@@ -85,17 +85,22 @@ def main():
     print("------------")
     
     print ("Nuovo individuo #1: ") # Pinco Pallino, nato il 17-dic-1885, morto il 5-feb-1915
-    new_guy = gedcom.structures.Individual("Pinco", "Pallino", "17-dic-1885", "5-feb-1915") 
+    new_guy = gedcom.structures.Individual("Pinco", "Pallino", "M", "17-dic-1885", "5-feb-1915") 
     ref = g.add_individual(new_guy)
     new_guy_retrieved = g.get_individual_by_reference(ref)
     print (new_guy.get_gedcom_repr(0))
     print ("------------")
-
     print ("Nuovo individuo #2: ") # Tizia Caia, nato il 18-dic-1885, morto il 6-feb-1915
-    new_lady = gedcom.structures.Individual("Tizia", "Caia", "18-dic-1885", "6-feb-1915") 
+    new_lady = gedcom.structures.Individual("Tizia", "Caia", "F", "18-dic-1885", "6-feb-1915") 
     ref_l = g.add_individual(new_lady)
     new_lady_retrieved = g.get_individual_by_reference(ref_l)
     print (new_lady_retrieved.get_gedcom_repr(0))
+    print ("------------")
+    print ("Nuovo individuo #3: ") # Sempronio Pallino, nato il 19-dic-1905, morto il 7-feb-1935
+    new_son = gedcom.structures.Individual("Sempronio", "Pallino", "M", "19-dic-1905", "7-feb-1935") 
+    ref_s = g.add_individual(new_son)
+    new_son_retrieved = g.get_individual_by_reference(ref_s)
+    print (new_son_retrieved.get_gedcom_repr(0))
     print ("------------")
 
     son = g.get_individual_by_reference("@I500335@") # Giancarlo Cassini
@@ -105,10 +110,17 @@ def main():
     g.link_individual(new_lady, son, Genealogy.RELATIONSHIP_MOTHER)
     print ("Aggiunta di " + str(new_lady_retrieved) + " come moglie di " + str(new_guy_retrieved)) # Tizia Caia partner di Pinco Pallino
     g.link_individual(new_lady, new_guy, Genealogy.RELATIONSHIP_PARTNER)
+    print ("Aggiunta di " + str(new_son_retrieved) + " come figlio di " + str(new_guy_retrieved)) # Sempronio Pallino figlio di Pinco Pallino
+    g.link_individual(new_son_retrieved, new_guy_retrieved, Genealogy.RELATIONSHIP_CHILD)
 
-    print ("Genitori di " + str(g.get_individual_by_reference("@I500335@")) + ":")
-    for parent in g.get_parents(g.get_individual_by_reference("@I500335@")): # Giancarlo Cassini
-        print (parent)
+    print ("Antenati di " + str(g.get_individual_by_reference("@I500335@")) + ":")
+    for ancestor in g.get_ancestors(g.get_individual_by_reference("@I500335@")): # Giancarlo Cassini
+        print (ancestor)
+    print("------------")
+    print ("Discendenti di " + str(new_guy_retrieved) + ":")
+    for descendant in g.get_descendants(new_guy_retrieved): # Pinco Pallino
+        print (descendant)
+    print("------------")
     print ("Sposo/a di " + str(new_guy) + ":")
     print (g.get_spouse(new_guy)) # Tizia Caia
     print("------------")

@@ -839,7 +839,7 @@ class Family(Record):
     children = property(get_children, set_children, del_children, "children's docstring")
 
 class Individual(Record):
-    def __init__(self, first_name = "", last_name = "", date_of_birth = "", date_of_death = ""):
+    def __init__(self, first_name = "", last_name = "", sex = "", date_of_birth = "", date_of_death = ""):
         self.__reference = ""
         self.__restriction_notice = ""
         self.__personal_name_structures = []
@@ -869,6 +869,8 @@ class Individual(Record):
                 name_structure.name = first_name.strip() + " /" + name_structure.name_piece_surname + "/"
             pass
             self.personal_name_structures.append(name_structure)
+        if sex:
+            self.__sex = sex
         if date_of_birth:
             event_birth = IndividualEventStructure()
             event_birth.tag = gedcom.tags.GEDCOM_TAG_BIRTH
