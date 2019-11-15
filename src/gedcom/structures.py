@@ -483,49 +483,43 @@ class Family(Record):
         self.__change_date = None
         self.__notes = []
         self.__sources = []
-        self.__multimedia_links = []
-        
-        self.__husband = None
-        self.__wife = None
-        self.__children = []
-
+        self.__multimedia_links = []     
         super().__init__()
 
-    def get_husband(self):
-        return self.__husband
+    def get_partner(self, individual):
+        if individual.is_male() and individual.reference == self.__husband_reference:
+            return self.__wife_reference
+        elif individual.is_female() and individual.reference == self.__wife_reference:
+            return self.__husband_reference
+        return None
+    
+    def has_children(self):
+        return len(self.__children_references) > 0
 
+    def add_child(self, child):
+        if child.reference not in self.__children_references:
+            self.__children_references.append(child.reference)
+    
+    def add_partner_reference(self, individual):
+        if individual.is_male():
+            self.__husband_reference = individual.reference
+        elif individual.is_female():
+            self.__wife_reference = individual.reference
 
-    def get_wife(self):
-        return self.__wife
-
-
-    def get_children(self):
-        return self.__children
-
-
-    def set_husband(self, value):
-        self.__husband = value
-
-
-    def set_wife(self, value):
-        self.__wife = value
-
-
-    def set_children(self, value):
-        self.__children = value
-
-
-    def del_husband(self):
-        del self.__husband
-
-
-    def del_wife(self):
-        del self.__wife
-
-
-    def del_children(self):
-        del self.__children
-
+    def has_individual_reference(self, indi_ref):
+        return indi_ref in self.__children_references or indi_ref == self.__husband_reference or indi_ref == self.__wife_reference
+    
+    def is_empty(self):
+        return self.__husband_reference=="" and self.__wife_reference==""
+    
+    def remove_individual_reference(self, indi_ref):
+        if self.has_individual_reference(indi_ref):
+            if indi_ref == self.__husband_reference:
+                self.__husband_reference = ""
+            elif indi_ref == self.__wife_reference:
+                self.__wife_reference = ""
+            else:
+                self.__children_references.remove(indi_ref)
 
     def populate_references(self, env):
         if isinstance(env, gedcom_file.GedcomFile):
@@ -834,9 +828,6 @@ class Family(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
     multimedia_links = property(get_multimedia_links, set_multimedia_links, del_multimedia_links, "multimedia_links's docstring")
-    husband = property(get_husband, set_husband, del_husband, "husband's docstring")
-    wife = property(get_wife, set_wife, del_wife, "wife's docstring")
-    children = property(get_children, set_children, del_children, "children's docstring")
 
 class Individual(Record):
     def __init__(self, first_name = "", last_name = "", sex = "", date_of_birth = "", date_of_death = ""):
@@ -882,6 +873,30 @@ class Individual(Record):
             event_death._date = date_of_death
             event_death.death_yes = "Y"
             self.event_structures.append(event_death)
+    
+    def move_family(self, source_family, target_family):
+        new_family_link = ChildToFamilyLink()
+        new_family_link.family_reference = target_family
+        self.__child_to_family_links = [ctfl for ctfl in self.__child_to_family_links if ctfl.family_reference != source_family]
+        self.__child_to_family_links.append(new_family_link)
+    
+    def remove_family_as_partner(self, family_ref):
+        self.__spouse_to_family_links = [stfl for stfl in self.__spouse_to_family_links if stfl.family_reference != family_ref]
+    
+    def add_family_reference_as_partner(self, fam_ref):
+        if fam_ref not in [fam.family_reference for fam in self.__spouse_to_family_links]:
+            stfl = SpouseToFamilyLink()
+            stfl.family_reference = fam_ref
+            self.__spouse_to_family_links.append(stfl)
+
+    def has_family(self):
+        return len(self.__spouse_to_family_links) > 0
+
+    def is_male(self):
+        return self.__sex.upper() == "M"
+
+    def is_female(self):
+        return self.__sex.upper() == "F"
 
     def __str__(self):
         # string representation for debug purposes
