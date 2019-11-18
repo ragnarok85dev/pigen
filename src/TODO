@@ -1,11 +1,36 @@
 https://docs.python-guide.org/writing/structure/
 
 Metodi di Genealogy
-        Genealogy.unlink_individual(relationship: Relationship, individual1: Individual, individual2: Individual)
-        Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
-        Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
+	Genealogy.rename_family_reference(old_reference: str, new_reference: str)
+	Genealogy.rename_individual_reference(old_reference: str, new_reference: str)
+    Genealogy.unlink_individual(relationship: Relationship, individual1: Individual, individual2: Individual)
+    Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
+    Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
+    Genealogy.merge_family_trees(common_individuals: Individual[], family_tree: Genealogy): Genealogy
 
 Unit tests per Genealogy
+	Genealogy.import_gedcom_file
+	Genealogy.export_gedcom_file
+	Genealogy.add_family
+	Genealogy.add_individual
+	Genealogy.remove_family
+	Genealogy.remove_individual
+	
+	Genealogy.create_new_family_with_partners
+	Genealogy.create_new_family_with_parent_child
+	Genealogy.link_partner
+	Genealogy.link_child_to_existing_family
+	Genealogy.link_parent_to_existing_family
+	Genealogy.link_child
+	Genealogy.link_individual
+	Genealogy.get_partner
+	Genealogy.get_parents
+	Genealogy.get_children
+	Genealogy.get_mother
+	Genealogy.get_father
+	Genealogy.get_siblings
+	Genealogy.get_descendants
+	Genealogy.get_ancestors
 
 Gestire UID
 
@@ -16,7 +41,6 @@ Gestione di:
 	- Notes
 	- Objects
 	- Repositories
-	
 
 Visualizzazione di Genealogy
 
@@ -24,8 +48,6 @@ stampa albero completo
 stampa albero discendenti
 stampa albero antenati
 stampa libro
-inserimento / modifica
 esportazione GEDCOM MyHeritage
 importazione GEDCOM MyHeritage
-assegnazione identificativo univoco ad ogni persona
 salvataggio su DB

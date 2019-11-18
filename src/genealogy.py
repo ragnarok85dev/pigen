@@ -198,7 +198,7 @@ class Genealogy(object):
         elif new_relationship == self.RELATIONSHIP_MOTHER and self.get_mother(individual_b):
             # if a mother is already present, then return
             return
-        elif new_relationship == self.RELATIONSHIP_PARTNER and self.get_spouse(individual_b):
+        elif new_relationship == self.RELATIONSHIP_PARTNER and self.get_partner(individual_b):
             # if the same partner already present as partner, then return
             return
         elif new_relationship == self.RELATIONSHIP_CHILD and individual_a in self.get_children(individual_b):
@@ -226,7 +226,7 @@ class Genealogy(object):
         for records in (self.__individuals, self.__families, self.__notes, self.__sources, self.__objects, self.__repositories): gedcom_file.records.update(records)
         return gedcom_file
 
-    def get_spouse(self, individual: Individual) -> Individual:
+    def get_partner(self, individual: Individual) -> Individual:
         return self.__spouses.get(individual.reference)
 
     def get_individual_by_ref(self, reference: str) -> Individual:
@@ -243,13 +243,13 @@ class Genealogy(object):
 
     def get_father(self, individual: Individual) -> Individual:
         try:
-            return next((i for i in self.G.predecessors(individual) if i.sex == 'M'), None)
+            return next((i for i in self.G.predecessors(individual) if i.is_male()), None)
         except:
             return None
 
     def get_mother(self, individual: Individual) -> Individual:
         try:
-            return next((i for i in self.G.predecessors(individual) if i.sex == 'F'), None)
+            return next((i for i in self.G.predecessors(individual) if i.is_female()), None)
         except:
             return None
 
