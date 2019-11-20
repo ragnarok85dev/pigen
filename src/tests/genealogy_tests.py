@@ -1,6 +1,9 @@
 import unittest
 import genealogy
 from gedcom.structures import Individual, Family
+from gedcom.gedcom_file import GedcomFile
+from genealogy import Genealogy
+import os.path
 
 class GenealogyTests(unittest.TestCase):
     empty_gen_gedcom = ("0 HEAD\n"
@@ -9,6 +12,13 @@ class GenealogyTests(unittest.TestCase):
                             "1 GEDC\n"
                             "2 VERS 5.5\n"
                             "0 TRLR")
+
+    def load_sample_family(self):
+        parsed_gedcom_file = GedcomFile()
+        input_path = os.path.join(os.path.abspath(__file__), "../gedcom_files/sample_family.ged")
+        parsed_gedcom_file.parse_gedcom(input_path)    
+        return Genealogy(parsed_gedcom_file)
+
 
     def test_empty(self):
         g = genealogy.Genealogy()
@@ -199,26 +209,73 @@ class GenealogyTests(unittest.TestCase):
         father = g.get_individual_by_ref("@I1@")
         son = g.get_individual_by_ref("@I3@")
         g.un_link_individual(father, son, genealogy.Genealogy.RELATIONSHIP_FATHER)
-        self.assertEqual(len(list(g.get_children_of(father))), 0)
+        self.assertNotIn(son, list(g.get_children_of(father)))
         self.assertIsNone(g.get_father_of(son))
 
 
     def test_unlink_child(self):
-        g = self.test_create_simple_family()
+        g = self.load_sample_family()
         mother = g.get_individual_by_ref("@I2@")
         son = g.get_individual_by_ref("@I3@")
         g.un_link_individual(son, mother, genealogy.Genealogy.RELATIONSHIP_CHILD)
-        self.assertEqual(len(list(g.get_children_of(mother))), 0)
+        self.assertNotIn(son, list(g.get_children_of(mother)))
         self.assertIsNone(g.get_mother_of(son))
 
 
     def test_unlink_partner(self):
-        g = self.test_create_simple_family()
+        g = self.load_sample_family()
         father = g.get_individual_by_ref("@I1@")
         mother = g.get_individual_by_ref("@I2@")
         g.un_link_individual(father, mother, genealogy.Genealogy.RELATIONSHIP_PARTNER)
         self.assertIsNone(g.get_partner_of(father))
         self.assertIsNone(g.get_partner_of(mother))
+    
+        
+    def test_get_ancestors(self):
+        g = self.load_sample_family()
+        leaf = g.get_individual_by_ref("@I3@")
+        ancestors = [g.get_individual_by_ref("@I1@"), g.get_individual_by_ref("@I2@"), g.get_individual_by_ref("@I5@"), g.get_individual_by_ref("@I6@")]
+        self.assertEqual(len(g.get_ancestors_of(leaf)), 4)
+        for ancestor in ancestors:
+            self.assertIn(ancestor, g.get_ancestors_of(leaf))
+    
+        
+    def test_get_descendants(self):
+        g = self.load_sample_family()
+        root = g.get_individual_by_ref("@I6@")
+        descendants = [g.get_individual_by_ref("@I1@"), g.get_individual_by_ref("@I5@"), g.get_individual_by_ref("@I3@"), g.get_individual_by_ref("@I4@")]
+        self.assertEqual(len(g.get_descendants_of(root)), 4)
+        for descendant in descendants:
+            self.assertIn(descendant, g.get_descendants_of(root))
+    
+        
+    def test_rename_individual(self):
+        g = self.load_sample_family()
+        indi = g.get_individual_by_ref("@I1@")
+        indi_wife = g.get_individual_by_ref("@I2@")
+        new_ref = "@I999@"
+        g.rename_individual_reference(indi.reference, new_ref)
+        indi_2 = g.get_individual_by_ref(new_ref)
+        self.assertEqual(indi, indi_2)
+        self.assertEqual(g.get_partner_of(indi_wife).reference, new_ref)
+        self.assertEqual(g.get_partner_of(indi_2), indi_wife)
+    
+        
+    def test_rename_family(self):
+        g = self.load_sample_family()
+        fam = g.get_family_by_ref("@F3@")
+        wife = g.get_individual_by_ref("@I2@")
+        husb = g.get_individual_by_ref("@I1@")
+        new_ref = "@F999@"
+        g.rename_family_reference(fam.reference, new_ref)
+        fam_new = g.get_family_by_ref(new_ref)
+        self.assertEqual(fam, fam_new)
+        self.assertEqual(fam_new.husband_reference, husb.reference)
+        self.assertEqual(fam_new.wife_reference, wife.reference)
+        self.assertEqual(husb.spouse_to_family_links[0].family_reference, new_ref)
+        self.assertEqual(wife.spouse_to_family_links[0].family_reference, new_ref)
+        for child in [g.get_individual_by_ref("@I3@"), g.get_individual_by_ref("@I4@")]:
+            self.assertEqual(child.child_to_family_links[0].family_reference, new_ref)
 
 
 if __name__ == "__main__":

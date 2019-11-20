@@ -1,0 +1,72 @@
+0 HEAD
+2 VERS 0.0.1
+2 NAME pigen
+1 GEDC
+2 VERS 5.5
+0 @I1@ INDI
+1 NAME Pinco /Pallino/
+2 GIVN Pinco
+2 SURN Pallino
+1 SEX M
+1 BIRT
+2 DATE 17-dic-1885
+1 DEAT Y
+2 DATE 5-feb-1915
+1 FAMC @F4@
+1 FAMS @F3@
+0 @I2@ INDI
+1 NAME Tizia /Caia/
+2 GIVN Tizia
+2 SURN Caia
+1 SEX F
+1 BIRT
+2 DATE 25-dic-1885
+1 DEAT Y
+2 DATE 5-feb-1955
+1 FAMS @F3@
+0 @I3@ INDI
+1 NAME Sempronio /Pallino/
+2 GIVN Sempronio
+2 SURN Pallino
+1 SEX M
+1 BIRT
+2 DATE 11-dic-1905
+1 DEAT Y
+2 DATE 15-feb-1985
+1 FAMC @F3@
+0 @I4@ INDI
+1 NAME Genoveffa /Pallino/
+2 GIVN Genoveffa
+2 SURN Pallino
+1 SEX F
+1 BIRT
+2 DATE 1-dic-1906
+1 DEAT Y
+2 DATE 16-feb-1986
+1 FAMC @F3@
+0 @I5@ INDI
+1 NAME Nonno /Pallino/
+2 GIVN Nonno
+2 SURN Pallino
+1 SEX M
+1 FAMC @F5@
+1 FAMS @F4@
+0 @I6@ INDI
+1 NAME Bisnonno /Pallino/
+2 GIVN Bisnonno
+2 SURN Pallino
+1 SEX M
+1 FAMS @F5@
+0 @F3@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+0 @F4@ FAM
+1 HUSB @I5@
+1 CHIL @I1@
+1 NCHI 1
+0 @F5@ FAM
+1 HUSB @I6@
+1 CHIL @I5@
+1 NCHI 1
+0 TRLR

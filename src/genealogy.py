@@ -91,7 +91,7 @@ class Genealogy(object):
             if stfl.family_reference in self.__families.keys():
                 family = self.__families[stfl.family_reference]
                 family.remove_individual_reference(individual.reference)
-                if family.is_empty():
+                if family.has_no_parents():
                     self.remove_family(family)
         if individual.reference in self.__individuals.keys():
             del self.__individuals[individual.reference]
@@ -265,6 +265,8 @@ class Genealogy(object):
 
     def link_individual(self, individual_a, individual_b, new_relationship, family=None):
         # Links individual_a to individual_b with new_relationship in family
+        if individual_a == individual_b:
+            return
         if new_relationship == self.RELATIONSHIP_FATHER and self.get_father_of(individual_b):
             # if a father is already present, then return
             return
@@ -315,6 +317,8 @@ class Genealogy(object):
     
     def un_link_individual(self, individual_a, individual_b, relationship, family=None):
         # Unlinks individual_a from individual_b of the existing relationship
+        if individual_a == individual_b:
+            return
         if relationship == self.RELATIONSHIP_FATHER and self.get_father_of(individual_b) != individual_a:
             # if individual_a is not father of individual_b then return
             return
@@ -353,6 +357,10 @@ class Genealogy(object):
         gedcom_file.records = {}
         for records in (self.__individuals, self.__families, self.__notes, self.__sources, self.__objects, self.__repositories): gedcom_file.records.update(records)
         return gedcom_file
+    
+    
+    def get_gedcom(self):
+        return self.export_gedcom_file().get_gedcom_repr()
 
 
     def get_partner_of(self, individual: Individual) -> Individual:

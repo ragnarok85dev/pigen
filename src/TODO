@@ -6,10 +6,6 @@ Metodi di Genealogy
     Genealogy.merge_family_trees(common_individuals: Individual[], family_tree: Genealogy): Genealogy
 
 Unit tests per Genealogy
-	Genealogy.get_descendants_of
-	Genealogy.get_ancestors_of
-	Genealogy.rename_family_reference
-	Genealogy.rename_individual_reference
 	Genealogy.import_gedcom_file
 	Genealogy.export_gedcom_file
 

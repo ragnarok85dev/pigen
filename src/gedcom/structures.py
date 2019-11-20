@@ -509,7 +509,7 @@ class Family(Record):
     def has_individual_reference(self, indi_ref):
         return indi_ref in self.__children_references or indi_ref == self.__husband_reference or indi_ref == self.__wife_reference
     
-    def is_empty(self):
+    def has_no_parents(self):
         return self.__husband_reference=="" and self.__wife_reference==""
     
     def remove_individual_reference(self, indi_ref):
