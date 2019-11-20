@@ -486,7 +486,7 @@ class Family(Record):
         self.__multimedia_links = []     
         super().__init__()
 
-    def get_partner(self, individual):
+    def get_partner_of(self, individual):
         if individual.is_male() and individual.reference == self.__husband_reference:
             return self.__wife_reference
         elif individual.is_female() and individual.reference == self.__wife_reference:
@@ -874,11 +874,14 @@ class Individual(Record):
             event_death.death_yes = "Y"
             self.event_structures.append(event_death)
     
-    def move_family(self, source_family, target_family):
-        new_family_link = ChildToFamilyLink()
-        new_family_link.family_reference = target_family
-        self.__child_to_family_links = [ctfl for ctfl in self.__child_to_family_links if ctfl.family_reference != source_family]
-        self.__child_to_family_links.append(new_family_link)
+    def move_family(self, source_family_reference, target_family_reference):
+        # if the target family reference is already present in child_to_family_links, then it deletes the child_to_family_link having as source family the source_family_reference
+        if target_family_reference in [child_link.family_reference for child_link in self.__child_to_family_links]:
+            self.__child_to_family_links = [child_link for child_link in self.__child_to_family_links if child_link.family_reference != source_family_reference]
+        else: 
+            for child_link in self.__child_to_family_links:
+                if child_link.family_reference == source_family_reference:
+                    child_link.family_reference = target_family_reference
     
     def remove_family_as_partner(self, family_ref):
         self.__spouse_to_family_links = [stfl for stfl in self.__spouse_to_family_links if stfl.family_reference != family_ref]

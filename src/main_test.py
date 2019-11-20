@@ -58,6 +58,13 @@ def main():
     g.link_individual(tizia_caia, sempronio_pallino, Genealogy.RELATIONSHIP_MOTHER)
     g.link_individual(tizia_caia, pinco_pallino, Genealogy.RELATIONSHIP_PARTNER)
     print (g.export_gedcom_file().get_gedcom_repr())
+    print ("XXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    g.rename_family_reference("@F3@", "@F999@")
+    print (g.export_gedcom_file().get_gedcom_repr())
+    print ("XXXXXXXXXXXXXXXXXXXXXXXXXXX")
+    g.rename_individual_reference("@I1@", "@I666@")
+    print (g.export_gedcom_file().get_gedcom_repr())
+    
     
 
 #     input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"

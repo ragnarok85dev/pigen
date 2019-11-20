@@ -474,5 +474,5 @@ class TestGedcom(unittest.TestCase):
         self.assertEqual(compare_file, gedcom.get_gedcom_repr(), error_message)
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testLine']
+
     unittest.main()
