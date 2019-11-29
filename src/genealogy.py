@@ -27,14 +27,24 @@ class Genealogy(object):
 
 
     def get_individuals(self):
+        '''
+        Return all the individuals of the genealogy as a list 
+        '''
         return self.__individuals.values()
     
     
     def get_families(self):
+        '''
+        Return all the families of the genealogy as a list 
+        '''
         return self.__families.values()
 
 
     def import_gedcom_file(self, gedcom_file: GedcomFile):
+        '''
+        Populates a Genealogy object starting from a GedcomFile
+        :param gedcom_file: GedcomFile object
+        '''
         self.__individuals = gedcom_file.individuals
         self.__families = gedcom_file.families
         self.__notes = gedcom_file.notes
@@ -63,12 +73,20 @@ class Genealogy(object):
 
 
     def add_family(self, new_family):
+        '''
+        Add a new family to the genealogy
+        :param new_family: new family to be added
+        '''
         new_family.reference = "@F" + str(self.get_next_available_gedcom_id(self.__families.keys())) + "@"
         self.__families[new_family.reference] = new_family
         return new_family.reference
     
     
     def add_individual(self, new_individual):
+        '''
+        Add a new individual to the genealogy
+        :param new_individual: new individual to be added
+        '''
         new_individual.reference = "@I" + str(self.get_next_available_gedcom_id(self.__individuals.keys())) + "@"
         self.__individuals[new_individual.reference] = new_individual
         self.__G.add_node(new_individual)
@@ -76,11 +94,19 @@ class Genealogy(object):
     
     
     def remove_family(self, family):
+        '''
+        Removes a family from the genealogy
+        :param family: family to be removed
+        '''
         if family.reference in self.__families.keys():
             del self.__families[family.reference]
     
     
     def remove_individual(self, individual):
+        '''
+        Removes an individual from the genealogy
+        :param individual: individual to be removed
+        '''
         # remove reference from the family having individual as child
         for ctfl in individual.child_to_family_links:
             if ctfl.family_reference in self.__families.keys():
@@ -102,6 +128,11 @@ class Genealogy(object):
 
     
     def rename_family_reference(self, old_reference, new_reference):
+        '''
+        Renames a family reference from old_reference to new_reference in the whole genealogy
+        :param old_reference: old/current reference code (e.g. @F12@)
+        :param new_reference: new/future reference code (e.g. @F23@)
+        '''
         if old_reference in self.__families.keys():
             family = self.__families[old_reference]
             del self.__families[old_reference]
@@ -117,6 +148,11 @@ class Genealogy(object):
 
 
     def rename_individual_reference(self, old_reference, new_reference):
+        '''
+        Renames an individual reference from old_reference to new_reference in the whole genealogy
+        :param old_reference: old/current reference code (e.g. @I12@)
+        :param new_reference: new/future reference code (e.g. @I23@)
+        '''
         if old_reference in self.__individuals.keys():
             individual = self.__individuals[old_reference]
             del self.__individuals[old_reference]
@@ -135,11 +171,22 @@ class Genealogy(object):
     
     
     def add_and_link_individual(self, new_individual, existing_individual, relationship):
+        '''
+        Adds new_individual to the genealogy and links it to existing_individual with relationship
+        :param new_individual: new Individual to be added
+        :param existing_individual: existing Individual to be linked to
+        :param relationship: relationship to be used to link new_individual to existing_individual
+        '''
         self.add_individual(new_individual)
         self.link_individual(new_individual, existing_individual, relationship)
     
     
     def create_new_family_with_partners(self, individual_a, individual_b):
+        '''
+        Creates a new family with individual_a and individual_b as partners (depending on the sex, one is husband, the other is wife)
+        :param individual_a: Individual as family partner, either husband or wife
+        :param individual_b: Individual as family partner, either husband or wife
+        '''
         family = Family()
         family.add_partner_reference(individual_a)
         family.add_partner_reference(individual_b)
@@ -151,6 +198,11 @@ class Genealogy(object):
 
 
     def create_new_family_with_parent_child(self, parent, child):
+        '''
+        Creates a new family with parent as either husband or wife (depending on sex) and child as
+        :param parent: Individual as family partner, either husband or wife
+        :param child:Individual as family child
+        '''
         family = Family()
         family_reference = self.add_family(family)
         family.reference = family_reference
@@ -160,19 +212,24 @@ class Genealogy(object):
 
 
     def link_partner(self, individual_a, individual_b):
-        # if both invidual_a and individual_b do not have families, then create a new one and add them both
-        # if individual_a has a family and individual_b not, then:
-        #    if family of invidual_a has partner different from individual_b, then create a new family and add them both
-        #    if family of invidual_a has no partner, then 
-        #        add individual_b to that family
-        # if both individual_a and individual_b have (different) families, then:
-        #    create a new family and add them both
-        #    if family of individual_a has children and no partner, then 
-        #        move children to new family
-        #        delete that family
-        #    if family of individual_b has children and no partner, then 
-        #        move children to new family
-        #        delete that family
+        '''
+        Links individual_a and individual_b as partners in the same family
+        if both invidual_a and individual_b do not have families, then create a new one and add them both
+        if individual_a has a family and individual_b not, then:
+           if family of invidual_a has partner different from individual_b, then create a new family and add them both
+           if family of invidual_a has no partner, then 
+               add individual_b to that family
+        if both individual_a and individual_b have (different) families, then:
+           create a new family and add them both
+           if family of individual_a has children and no partner, then 
+               move children to new family
+               delete that family
+           if family of individual_b has children and no partner, then 
+               move children to new family
+               delete that family
+        :param individual_a: Individual as partner
+        :param individual_b: Individual as partner
+        '''
         if (not individual_a.has_family()) and (not individual_b.has_family()):
             self.create_new_family_with_partners(individual_a, individual_b)
         elif individual_a.has_family() and (not individual_b.has_family()):
@@ -217,6 +274,11 @@ class Genealogy(object):
     
 
     def link_child_to_existing_family(self, child, family_reference):
+        '''
+        Links a child to an existing family
+        :param child: Individual as child
+        :param family_reference: reference of the family where child will be linked to
+        '''
         if not child.reference in [child_ref for child_ref in self.__families[family_reference].children_references]:
             child_to_family_link = ChildToFamilyLink()
             child_to_family_link.family_reference = family_reference
@@ -226,6 +288,11 @@ class Genealogy(object):
     
 
     def link_parent_to_existing_family(self, parent, family_reference):
+        '''
+        Links a parent to an existing family
+        :param parent: Individual as a parent, either husband or wife (depending on sex)
+        :param family_reference: reference of the family where parent will be linked to
+        '''
         spouse_to_family_link = SpouseToFamilyLink()
         spouse_to_family_link.family_reference = family_reference
         if family_reference not in [stfl.family_reference for stfl in parent.spouse_to_family_links]:
@@ -234,6 +301,12 @@ class Genealogy(object):
 
 
     def link_child(self, child, parent, family=None):
+        '''
+        Links a child to a parent, using a specific family if specified
+        :param child: Individual as a child
+        :param parent: Individual as a parent
+        :param family: <optional> parent's family
+        '''
         if parent.has_family():
             if family:
                 family_reference = family.reference
@@ -251,6 +324,12 @@ class Genealogy(object):
 
 
     def link_siblings(self, individual_a, individual_b, family=None):
+        '''
+        Links individual_a to individual_b as siblings, , using a specific family if specified
+        :param individual_a: Individual to be linked to individual_b
+        :param individual_b: Individual who's going to host individual_b as sibling
+        :param family: <optional> individual_b's family
+        '''
         if not family:
             # if the link is not specified on any family, then it takes the first of individual_b
             family = self.__families[individual_b.child_to_family_links[0].family_reference]
@@ -264,6 +343,13 @@ class Genealogy(object):
 
 
     def link_individual(self, individual_a, individual_b, new_relationship, family=None):
+        '''
+        Links individual_a to individual_b with a new relationship, using a specific family
+        :param individual_a: Individual to be linked
+        :param individual_b: Individual to be linked to
+        :param new_relationship: type of relationship
+        :param family: <optional> family of individual_b
+        '''
         # Links individual_a to individual_b with new_relationship in family
         if individual_a == individual_b:
             return
@@ -293,6 +379,12 @@ class Genealogy(object):
     
     
     def un_link_child(self, child, parent, family=None):
+        '''
+        Unlinks child from parent, using a specific family
+        :param child: Individual to be unlinked as child
+        :param parent: Individual whose child is going to be unlinked from
+        :param family: <optional> parent's family to be unlinked from
+        '''
         if not family:
             family = self.__families[parent.spouse_to_family_links[0].family_reference]
         family.children_references = [child_ref for child_ref in family.children_references if child_ref != child.reference]
@@ -301,6 +393,12 @@ class Genealogy(object):
     
     
     def un_link_partner(self, individual_a, individual_b, family=None):
+        '''
+        Unlinks individual_a from individual_b as partners, using a specific family
+        :param individual_a: Individual
+        :param individual_b: Individual
+        :param family: <optional> individual_a's family to be unlinked from
+        '''
         # if individual_a has children with individual_b, those remain with individual_b
         if not family:
             family = self.__families[individual_a.spouse_to_family_links[0].family_reference]
@@ -311,12 +409,24 @@ class Genealogy(object):
         
     
     def un_link_siblings(self, individual_a, individual_b):
+        '''
+        Unlinks individual_a from individual_b as siblings, , using a specific family if specified
+        :param individual_a: Individual to be unlinked to individual_b
+        :param individual_b: Individual who's going to loose individual_b as sibling
+        :param family: <optional> individual_b's family
+        '''
         for parent in self.get_parents_of(individual_b):
             self.un_link_child(individual_a, parent)
     
     
     def un_link_individual(self, individual_a, individual_b, relationship, family=None):
-        # Unlinks individual_a from individual_b of the existing relationship
+        '''
+        Unlinks individual_a from individual_b of the existing relationship
+        :param individual_a: Individual to be unlinked
+        :param individual_b: Individual to be unlinked from
+        :param relationship: type of relationship
+        :param family: <optional> family of individual_b
+        '''
         if individual_a == individual_b:
             return
         if relationship == self.RELATIONSHIP_FATHER and self.get_father_of(individual_b) != individual_a:
@@ -344,7 +454,10 @@ class Genealogy(object):
             self.un_link_siblings(individual_a, individual_b)
     
     def get_next_available_gedcom_id(self, records):
-        # returns the first available GEDCOM ID number for a new record
+        '''
+        Returns the first available GEDCOM ID number for a new record
+        :param records: genealogy records to be taken into account
+        ''' 
         if len(records) == 0:
             return 1
         taken_numbers = [int(re.search(r'\d+', record_id).group()) for record_id in records]
@@ -352,6 +465,9 @@ class Genealogy(object):
     
     
     def export_gedcom_file(self) -> GedcomFile:
+        '''
+        Returns a new GedcomFile starting from this object
+        '''
         gedcom_file = GedcomFile()
         gedcom_file.header = Header(__version__, "pigen", "5.5")
         gedcom_file.records = {}
@@ -360,42 +476,77 @@ class Genealogy(object):
     
     
     def get_gedcom(self):
+        '''
+        Returns the corresponding GedcomFile's GEDCOM representation
+        '''
         return self.export_gedcom_file().get_gedcom_repr()
 
 
     def get_partner_of(self, individual: Individual) -> Individual:
+        '''
+        Returns partner of individual
+        :param individual: Individual to get partner of
+        '''
         return self.__spouses.get(individual.reference)
 
 
     def get_individual_by_ref(self, reference: str) -> Individual:
+        '''
+        Returns the Individual identified by reference
+        :param reference: reference of the individual
+        '''
         return self.__individuals[reference]
 
 
     def get_family_by_ref(self, reference: str) -> Family:
+        '''
+        Returns the Family identified by reference
+        :param reference: reference of the family
+        '''
         return self.__families[reference]
 
 
     def get_parents_of(self, individual):
+        '''
+        Returns a list of parents of individual
+        :param individual: Individual
+        '''
         if individual in self.G:
             return list(self.G.predecessors(individual))
 
 
     def get_children_of(self, individual):
+        '''
+        Returns a list of children of individual
+        :param individual: Individual
+        '''
         if individual in self.G:
             return list(self.G.successors(individual))
 
 
     def get_father_of(self, individual: Individual) -> Individual:
+        '''
+        Returns the father of individual as Individual, None if not present
+        :param individual: Individual
+        '''
         if individual in self.G:
             return next((i for i in self.G.predecessors(individual) if i.is_male()), None)
 
 
     def get_mother_of(self, individual: Individual) -> Individual:
+        '''
+        Returns the mother of individual as Individual, None if not present
+        :param individual: Individual
+        '''
         if individual in self.G:
             return next((i for i in self.G.predecessors(individual) if i.is_female()), None)
 
 
     def get_siblings_of(self, individual):
+        '''
+        Returns a list of siblings of individual
+        :param individual: Individual
+        '''
         siblings = []
         for parent in self.get_parents_of(individual):
             siblings += self.get_children_of(parent)
@@ -406,6 +557,10 @@ class Genealogy(object):
 
 
     def get_descendants_of(self, individual):
+        '''
+        Returns a list of descendants of individual
+        :param individual: Individual
+        '''
         descendants = []
         if individual in self.G:
             for child in self.get_children_of(individual):
@@ -414,6 +569,10 @@ class Genealogy(object):
 
 
     def get_ancestors_of(self, individual):
+        '''
+        Returns a list of ancestors of individual
+        :param individual: Individual
+        '''
         if individual in self.G:
             mother = self.get_mother_of(individual)
             father = self.get_father_of(individual)
@@ -422,6 +581,10 @@ class Genealogy(object):
 
 
     def get_branch(self, individuals):
+        '''
+        Returns a subgraph from a list of individuals
+        :param individuals: list of Individual belonging to this object
+        '''
         return self.G.subgraph(individuals)
 
 

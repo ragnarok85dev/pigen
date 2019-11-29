@@ -33,21 +33,21 @@ def plot_tree(graph):
 
 
 def main():
-    parsed_gedcom_file = GedcomFile()
-    input_path = os.path.join(os.path.abspath(__file__), "../tests/gedcom_files/sample_family.ged")
-    parsed_gedcom_file.parse_gedcom(input_path)    
-    g = Genealogy(parsed_gedcom_file)
-    
-    pinco_pallino = g.get_individual_by_ref("@I1@")
-    nonno_pallino = gedcom.structures.Individual("Nonno", "Pallino", "M")
-    g.add_individual(nonno_pallino)
-    g.link_individual(nonno_pallino, pinco_pallino, Genealogy.RELATIONSHIP_FATHER)
-    
-    bisnonno_pallino = gedcom.structures.Individual("Bisnonno", "Pallino", "M")
-    g.add_individual(bisnonno_pallino)
-    g.link_individual(bisnonno_pallino, nonno_pallino, Genealogy.RELATIONSHIP_FATHER)
-    
-    print (g.get_gedcom())
+#     parsed_gedcom_file = GedcomFile()
+#     input_path = os.path.join(os.path.abspath(__file__), "../tests/gedcom_files/sample_family.ged")
+#     parsed_gedcom_file.parse_gedcom(input_path)    
+#     g = Genealogy(parsed_gedcom_file)
+#     
+#     pinco_pallino = g.get_individual_by_ref("@I1@")
+#     nonno_pallino = gedcom.structures.Individual("Nonno", "Pallino", "M")
+#     g.add_individual(nonno_pallino)
+#     g.link_individual(nonno_pallino, pinco_pallino, Genealogy.RELATIONSHIP_FATHER)
+#     
+#     bisnonno_pallino = gedcom.structures.Individual("Bisnonno", "Pallino", "M")
+#     g.add_individual(bisnonno_pallino)
+#     g.link_individual(bisnonno_pallino, nonno_pallino, Genealogy.RELATIONSHIP_FATHER)
+#     
+#     print (g.get_gedcom())
 
     
 #     g = Genealogy()
@@ -77,11 +77,15 @@ def main():
 #     g.link_individual(tizia_caia, pinco_pallino, Genealogy.RELATIONSHIP_PARTNER)
 #     print (g.export_gedcom_file().get_gedcom_repr())
 
-#     input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"
-#     parsed_gedcom_file = GedcomFile()
-#     parsed_gedcom_file.parse_gedcom(input_filepath)
-# 
-#     g = Genealogy(parsed_gedcom_file)
+    input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"
+    parsed_gedcom_file = GedcomFile()
+    parsed_gedcom_file.parse_gedcom(input_filepath)
+
+    g = Genealogy(parsed_gedcom_file)
+    for individual in g.get_individuals():
+        if individual.get_date_of_birth():
+            print(individual.get_date_of_birth() + " - " + str(individual))
+    
 #     print_gedcom(g, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged")
 # 
 #     print ("Sposo/a di " + str(g.get_individual_by_ref("@I20@")) + ":")

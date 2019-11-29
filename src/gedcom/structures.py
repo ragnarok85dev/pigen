@@ -866,13 +866,22 @@ class Individual(Record):
             event_birth = IndividualEventStructure()
             event_birth.tag = gedcom.tags.GEDCOM_TAG_BIRTH
             event_birth._date = date_of_birth
-            self.event_structures.append(event_birth)
+            self.__event_structures.append(event_birth)
         if date_of_death:
             event_death = IndividualEventStructure()
             event_death.tag = gedcom.tags.GEDCOM_TAG_DEATH
             event_death._date = date_of_death
             event_death.death_yes = "Y"
-            self.event_structures.append(event_death)
+            self.__event_structures.append(event_death)
+    
+    
+    def get_date_of_birth(self):
+        return next((event._date for event in self.__event_structures if event.tag == gedcom.tags.GEDCOM_TAG_DEATH and event._date), None)
+    
+    
+    def get_date_of_death(self):
+        return next((event._date for event in self.__event_structures if event.tag == gedcom.tags.GEDCOM_TAG_BIRTH and event._date), None)        
+    
     
     def move_family(self, source_family_reference, target_family_reference):
         # if the target family reference is already present in child_to_family_links, then it deletes the child_to_family_link having as source family the source_family_reference
