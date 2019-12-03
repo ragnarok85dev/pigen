@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import ete3
 from ete3.treeview.main import TreeStyle
+import os
 
 def print_gedcom(genealogy, filepath):
     exported_gedcom = genealogy.export_gedcom_file()
@@ -31,10 +32,24 @@ def plot_tree(graph):
 
 
 def main():
+#     input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"
 #     parsed_gedcom_file = GedcomFile()
-#     input_path = os.path.join(os.path.abspath(__file__), "../tests/gedcom_files/sample_family.ged")
-#     parsed_gedcom_file.parse_gedcom(input_path)    
-#     g = Genealogy(parsed_gedcom_file)
+#     parsed_gedcom_file.parse_gedcom(input_filepath)
+#     genealogy = Genealogy(parsed_gedcom_file)
+#     print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged")
+#     
+#     new_genealogy = Genealogy(GedcomFile(input_filepath))
+#     genealogy.add_disconnected_genealogy(new_genealogy)
+#     
+#     print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen_updated.ged")  
+    
+    parsed_gedcom_file = GedcomFile()
+    input_path = os.path.join(os.path.abspath(__file__), "../tests/gedcom_files/sample_family.ged")
+    parsed_gedcom_file.parse_gedcom(input_path)    
+    g = Genealogy(parsed_gedcom_file)
+    
+    print (g.get_gedcom())
+    
 #     
 #     pinco_pallino = g.get_individual_by_ref("@I1@")
 #     nonno_pallino = gedcom.structures.Individual("Nonno", "Pallino", "M")
@@ -75,17 +90,7 @@ def main():
 #     g.link_individual(tizia_caia, pinco_pallino, Genealogy.RELATIONSHIP_PARTNER)
 #     print (g.export_gedcom_file().get_gedcom_repr())
 
-    input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"
-    parsed_gedcom_file = GedcomFile()
-    parsed_gedcom_file.parse_gedcom(input_filepath)
-    genealogy = Genealogy(parsed_gedcom_file)
-    print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged")
-    
-    new_genealogy = Genealogy(GedcomFile(input_filepath))
-    genealogy.add_disconnected_genealogy(new_genealogy)
-    
-    print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen_updated.ged")
-    
+   
 #     root = genealogy.get_individual_by_ref("@I500048@")
 #     subtrees = {node:ete3.Tree(name=node) for node in genealogy.get_individuals()}
 #     [*map(lambda edge:subtrees[edge[0]].add_child(subtrees[edge[1]]), genealogy.G.edges())]

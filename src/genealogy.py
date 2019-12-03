@@ -39,6 +39,11 @@ class Genealogy(object):
 
 
     def __init__(self, gedcom_file = None):
+        '''
+        Instantiates a Genealogy class, optionally starting from a GedcomFile object
+        :param gedcom_file: GedcomFile object created starting from a GEDCOM file
+        :type gedcom_file: gedcom.GedcomFile
+        '''
         self.__G = nx.DiGraph()
         self.__individuals = {}
         self.__families = {}
@@ -79,6 +84,23 @@ class Genealogy(object):
         self.__repositories = gedcom_file.repositories
         for individual in self.__individuals.values():
             self.populate_relationships_graph(individual, self.__individuals, self.__families)
+    
+    
+    def link_genealogy(self, new_genealogy, existing_individual, new_genealogy_individual, relationship):
+        '''
+        Add another genealogy to the existing one, linking the existing_genealogy to new_genealogy_individual, the latter belonging to new_genealogy 
+        :param new_genealogy: new genealogy
+        :type new_genealogy: Genealogy
+        :param existing_individual: individual belonging to current genealogy
+        :type existing_individual: Individual
+        :param new_genealogy_individual: individual belonging to the new genealogy
+        :type new_genealogy_individual: Individual
+        :param relationship: relationship linking existing_individual to new new_genealogy_individual
+        :type relationship: str
+        '''
+        if isinstance(new_genealogy, Genealogy) and existing_individual in self.__individuals.values() and new_genealogy_individual in new_genealogy.individuals.values():
+            self.add_disconnected_genealogy(new_genealogy)
+            self.link_individual(existing_individual, new_genealogy_individual, relationship)
     
     
     def add_disconnected_genealogy(self, new_genealogy):

@@ -1,11 +1,11 @@
 https://docs.python-guide.org/writing/structure/
 
 Metodi di Genealogy
-    Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
     Genealogy.merge_family_trees(common_individuals: Individual[], family_tree: Genealogy): Genealogy
 
 Unit tests per Genealogy
 	Genealogy.add_disconnected_genealogy
+	Genealogy.link_genealogy
 	Genealogy.import_gedcom_file
 	Genealogy.export_gedcom_file
 
@@ -25,6 +25,4 @@ stampa albero completo
 stampa albero discendenti
 stampa albero antenati
 stampa libro
-esportazione GEDCOM MyHeritage
-importazione GEDCOM MyHeritage
 salvataggio su DB
