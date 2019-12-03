@@ -2,10 +2,8 @@ from gedcom.gedcom_file import GedcomFile
 from genealogy import Genealogy
 import matplotlib.pyplot as plt
 import networkx as nx
-from pyvis.network import Network
-import gedcom
-import time
-import os.path
+import ete3
+from ete3.treeview.main import TreeStyle
 
 def print_gedcom(genealogy, filepath):
     exported_gedcom = genealogy.export_gedcom_file()
@@ -80,11 +78,25 @@ def main():
     input_filepath = "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"
     parsed_gedcom_file = GedcomFile()
     parsed_gedcom_file.parse_gedcom(input_filepath)
-
-    g = Genealogy(parsed_gedcom_file)
-    for individual in g.get_individuals():
-        if individual.get_date_of_birth():
-            print(individual.get_date_of_birth() + " - " + str(individual))
+    genealogy = Genealogy(parsed_gedcom_file)
+    print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged")
+    
+    new_genealogy = Genealogy(GedcomFile(input_filepath))
+    genealogy.add_disconnected_genealogy(new_genealogy)
+    
+    print_gedcom(genealogy, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen_updated.ged")
+    
+#     root = genealogy.get_individual_by_ref("@I500048@")
+#     subtrees = {node:ete3.Tree(name=node) for node in genealogy.get_individuals()}
+#     [*map(lambda edge:subtrees[edge[0]].add_child(subtrees[edge[1]]), genealogy.G.edges())]
+#     tree = subtrees[root]
+#     ts = TreeStyle()
+#     ts.show_leaf_name = True
+#     ts.mode = "c"
+#     ts.arc_start = -180 # 0 degrees = 3 o'clock
+#     ts.arc_span = 180
+#     tree.show(tree_style=ts)
+    
     
 #     print_gedcom(g, "C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage_pigen.ged")
 # 

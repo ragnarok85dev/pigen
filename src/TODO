@@ -1,11 +1,11 @@
 https://docs.python-guide.org/writing/structure/
 
 Metodi di Genealogy
-    Genealogy.add_disconnected_family_tree(family_tree: Genealogy)
     Genealogy.link_family_tree(relationship: Relationship, individual: Individual, family_tree: Genealogy)
     Genealogy.merge_family_trees(common_individuals: Individual[], family_tree: Genealogy): Genealogy
 
 Unit tests per Genealogy
+	Genealogy.add_disconnected_genealogy
 	Genealogy.import_gedcom_file
 	Genealogy.export_gedcom_file
 
@@ -13,13 +13,13 @@ Gestire UID
 
 GUI per Genealogy(?)
 
-Gestione di:
+Gestione di (merge, insert, delete, update):
 	- Sources
 	- Notes
 	- Objects
 	- Repositories
 
-Visualizzazione di Genealogy
+Visualizzazione di Genealogy -> ETE3 (etetoolkit.org)
 
 stampa albero completo
 stampa albero discendenti

@@ -23,8 +23,8 @@ class GenealogyTests(unittest.TestCase):
     def test_empty(self):
         g = genealogy.Genealogy()
         gedcom_f = g.export_gedcom_file()
-        self.assertEqual(len(g.get_individuals()), 0)
-        self.assertEqual(len(g.get_families()), 0)
+        self.assertEqual(len(g.get_individuals_list()), 0)
+        self.assertEqual(len(g.get_families_list()), 0)
         self.assertEqual(self.empty_gen_gedcom, gedcom_f.get_gedcom_repr())
 
 
@@ -32,7 +32,7 @@ class GenealogyTests(unittest.TestCase):
         g = genealogy.Genealogy()
         # testing adding a new individual
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
-        indi_ref = g.add_individual(pinco_pallino)
+        indi_ref = g.add_new_individual(pinco_pallino)
         indi_gedcom = "0 %s INDI\n" % (indi_ref)
         indi_gedcom = indi_gedcom + ("1 NAME Pinco /Pallino/\n"
                                     "2 GIVN Pinco\n"
@@ -43,55 +43,55 @@ class GenealogyTests(unittest.TestCase):
                                     "1 DEAT Y\n"
                                     "2 DATE 16-mar-1950\n")
         gedcom = self.empty_gen_gedcom.replace("0 TRLR", indi_gedcom) + "0 TRLR"
-        self.assertEqual(len(g.get_individuals()), 1)
+        self.assertEqual(len(g.get_individuals_list()), 1)
         self.assertEqual(pinco_pallino, g.get_individual_by_ref(indi_ref))
         self.assertEqual(gedcom, g.export_gedcom_file().get_gedcom_repr())
         # testing removing the individual
         g.remove_individual(pinco_pallino)
-        self.assertEqual(len(g.get_individuals()), 0)
+        self.assertEqual(len(g.get_individuals_list()), 0)
         self.assertEqual(self.empty_gen_gedcom, g.export_gedcom_file().get_gedcom_repr())
 
 
     def test_add_individual(self):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
-        pp_ref = g.add_individual(pinco_pallino)
+        pp_ref = g.add_new_individual(pinco_pallino)
         pp_retrieved = g.get_individual_by_ref(pp_ref)
         self.assertEqual(pinco_pallino, pp_retrieved)
-        self.assertEqual(len(g.get_individuals()), 1)
+        self.assertEqual(len(g.get_individuals_list()), 1)
 
 
     def test_remove_individual(self):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
-        g.add_individual(pinco_pallino)
+        g.add_new_individual(pinco_pallino)
         g.remove_individual(pinco_pallino)
-        self.assertEqual(len(g.get_individuals()), 0)
+        self.assertEqual(len(g.get_individuals_list()), 0)
 
 
     def test_add_family(self):
         g = genealogy.Genealogy()
         new_family = Family()
-        new_family_ref = g.add_family(new_family)
+        new_family_ref = g.add_new_family(new_family)
         ff_retrieved = g.get_family_by_ref(new_family_ref)
         self.assertEqual(new_family, ff_retrieved)
-        self.assertEqual(len(g.get_families()), 1)    
+        self.assertEqual(len(g.get_families_list()), 1)    
 
 
     def test_remove_family(self):
         g = genealogy.Genealogy()
         new_family = Family()
-        g.add_family(new_family)
+        g.add_new_family(new_family)
         g.remove_family(new_family)
-        self.assertEqual(len(g.get_families()), 0)   
+        self.assertEqual(len(g.get_families_list()), 0)   
 
 
     def test_create_new_family_with_partners(self):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
         pinca_caia = Individual("Pinca", "Caia", "F", "11-mar-1901", "26-nov-1960")
-        husb_ref = g.add_individual(pinco_pallino)
-        wife_ref = g.add_individual(pinca_caia)
+        husb_ref = g.add_new_individual(pinco_pallino)
+        wife_ref = g.add_new_individual(pinca_caia)
         fam_ref = g.create_new_family_with_partners(pinco_pallino, pinca_caia)
         fam = g.get_family_by_ref(fam_ref)
         self.assertEqual(fam.husband_reference, husb_ref)
@@ -103,8 +103,8 @@ class GenealogyTests(unittest.TestCase):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
-        father_ref = g.add_individual(pinco_pallino)
-        son_ref = g.add_individual(tizio_pallino)
+        father_ref = g.add_new_individual(pinco_pallino)
+        son_ref = g.add_new_individual(tizio_pallino)
         fam_ref = g.create_new_family_with_parent_child(pinco_pallino, tizio_pallino)
         fam = g.get_family_by_ref(fam_ref)
         self.assertEqual(fam.husband_reference, father_ref)
@@ -117,29 +117,29 @@ class GenealogyTests(unittest.TestCase):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
-        father_ref = g.add_individual(pinco_pallino)
-        son_ref = g.add_individual(tizio_pallino)
+        father_ref = g.add_new_individual(pinco_pallino)
+        son_ref = g.add_new_individual(tizio_pallino)
         g.link_individual(pinco_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_FATHER)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
-        self.assertEqual(len(g.get_individuals()), 2)
-        self.assertEqual(len(g.get_families()), 1)
+        self.assertEqual(len(g.get_individuals_list()), 2)
+        self.assertEqual(len(g.get_families_list()), 1)
         self.assertEqual(g.get_father_of(tizio_pallino), pinco_pallino)
         self.assertEqual(list(g.get_children_of(pinco_pallino))[0], tizio_pallino)
         self.assertEqual(family.husband_reference, father_ref)
         self.assertEqual(family.children_references[0], son_ref)
         g.remove_individual(pinco_pallino)
         g.remove_individual(tizio_pallino)
-        self.assertEqual(len(g.get_individuals()), 0)
-        self.assertEqual(len(g.get_families()), 0)
+        self.assertEqual(len(g.get_individuals_list()), 0)
+        self.assertEqual(len(g.get_families_list()), 0)
 
 
     def test_mother_son(self):
         g = genealogy.Genealogy()
         pinca_caia = Individual("Pinca", "Caia", "F", "11-mar-1901", "26-nov-1960")
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
-        mother_ref = g.add_individual(pinca_caia)
-        son_ref = g.add_individual(tizio_pallino)
+        mother_ref = g.add_new_individual(pinca_caia)
+        son_ref = g.add_new_individual(tizio_pallino)
         g.link_individual(pinca_caia, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_MOTHER)
         family_ref = pinca_caia.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
@@ -153,13 +153,13 @@ class GenealogyTests(unittest.TestCase):
         g = genealogy.Genealogy()
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
         pinca_caia = Individual("Pinca", "Caia", "F", "11-mar-1901", "26-nov-1960")
-        husb_ref = g.add_individual(pinco_pallino)
-        wife_ref = g.add_individual(pinca_caia)
+        husb_ref = g.add_new_individual(pinco_pallino)
+        wife_ref = g.add_new_individual(pinca_caia)
         g.link_individual(pinco_pallino, pinca_caia, genealogy.Genealogy.RELATIONSHIP_PARTNER)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
-        self.assertEqual(len(g.get_individuals()), 2)
-        self.assertEqual(len(g.get_families()), 1)
+        self.assertEqual(len(g.get_individuals_list()), 2)
+        self.assertEqual(len(g.get_families_list()), 1)
         self.assertEqual(g.get_partner_of(pinco_pallino), pinca_caia)
         self.assertEqual(g.get_partner_of(pinca_caia), pinco_pallino)
         self.assertEqual(family.husband_reference, husb_ref)
@@ -171,17 +171,17 @@ class GenealogyTests(unittest.TestCase):
         pinco_pallino = Individual("Pinco", "Pallino", "M", "15-feb-1900", "16-mar-1950")
         pinca_caia = Individual("Pinca", "Caia", "F", "11-mar-1901", "26-nov-1960")
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
-        husb_ref = g.add_individual(pinco_pallino)
-        wife_ref = g.add_individual(pinca_caia)
-        son_ref = g.add_individual(tizio_pallino)
+        husb_ref = g.add_new_individual(pinco_pallino)
+        wife_ref = g.add_new_individual(pinca_caia)
+        son_ref = g.add_new_individual(tizio_pallino)
         g.link_individual(pinco_pallino, pinca_caia, genealogy.Genealogy.RELATIONSHIP_PARTNER)
         g.link_individual(pinca_caia, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_MOTHER)
         g.link_individual(pinco_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_FATHER)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
         
-        self.assertEqual(len(g.get_individuals()), 3)
-        self.assertEqual(len(g.get_families()), 1)
+        self.assertEqual(len(g.get_individuals_list()), 3)
+        self.assertEqual(len(g.get_families_list()), 1)
         self.assertEqual(g.get_partner_of(pinco_pallino), pinca_caia)
         self.assertEqual(family.husband_reference, husb_ref)
         self.assertEqual(family.wife_reference, wife_ref)
@@ -195,7 +195,7 @@ class GenealogyTests(unittest.TestCase):
         g = self.test_create_simple_family()
         tizio_pallino = g.get_individual_by_ref("@I3@")
         caia_pallino = Individual("Caia", "Pallino", "F", "11-mar-1921", "26-nov-1971")
-        g.add_individual(caia_pallino)
+        g.add_new_individual(caia_pallino)
         g.link_individual(caia_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_SIBLING)
         self.assertEqual(list(g.get_siblings_of(tizio_pallino))[0], caia_pallino)
         self.assertEqual(list(g.get_siblings_of(caia_pallino))[0], tizio_pallino)
