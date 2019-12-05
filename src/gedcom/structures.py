@@ -914,8 +914,8 @@ class Individual(Record):
         # string representation for debug purposes
         if len(self.personal_name_structures) > 0:
             if self.personal_name_structures[0].name:
-                return self.personal_name_structures[0].name.replace('/', '')
-            return (self.personal_name_structures[0].name_piece_given + " " + self.personal_name_structures[0].name_piece_surname).replace('/', '')
+                return self.personal_name_structures[0].name.replace('/', '') + ' [' + self.__reference + ']'
+            return (self.personal_name_structures[0].name_piece_given + " " + self.personal_name_structures[0].name_piece_surname).replace('/', '') + ' [' + self.__reference + ']'
         return ""
     
     def get_reference(self):

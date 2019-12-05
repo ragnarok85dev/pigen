@@ -1,7 +1,13 @@
 https://docs.python-guide.org/writing/structure/
 
 Metodi di Genealogy
-    Genealogy.merge_family_trees(common_individuals: Individual[], family_tree: Genealogy): Genealogy
+	calcolo relazione (e.s. fratello, cugino, etc.)
+	esportazione in CSV delle persone
+	stampa albero completo
+	stampa albero discendenti
+	stampa albero antenati
+	stampa libro
+	salvataggio su DB
 
 Unit tests per Genealogy
 	Genealogy.add_disconnected_genealogy
@@ -11,6 +17,8 @@ Unit tests per Genealogy
 
 Gestire UID
 
+Documentazione con sphynx
+
 GUI per Genealogy(?)
 
 Gestione di (merge, insert, delete, update):
@@ -19,10 +27,4 @@ Gestione di (merge, insert, delete, update):
 	- Objects
 	- Repositories
 
-Visualizzazione di Genealogy -> ETE3 (etetoolkit.org)
-
-stampa albero completo
-stampa albero discendenti
-stampa albero antenati
-stampa libro
-salvataggio su DB
+Visualizzazione di Genealogy -> ETE3 (etetoolkit.org) - Newick

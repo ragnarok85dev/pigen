@@ -27,8 +27,6 @@ class Genealogy(object):
         Dictionary of multimedia objects, whose keys are the multimedia' references
     __repositories: dict of gedcom.structures.Repository
         Dictionary of repositories, whose keys are the repositories' references
-    __spouses: dict of gedcom.structures.Individual
-        Dictionary of partners, whose keys are the other partner's reference
     '''
     
     RELATIONSHIP_FATHER = "0"
@@ -52,7 +50,6 @@ class Genealogy(object):
         self.__multimedia = {}
         self.__repositories = {}
         self.__max_indexes = {"INDIVIDUALS": 0, "FAMILIES": 0, "NOTES": 0, "SOURCES": 0, "MULTIMEDIA": 0, "REPOSITORIES": 0}
-        self.__spouses = {}
         if gedcom_file:
             self.import_gedcom_file(gedcom_file)
 
@@ -101,8 +98,8 @@ class Genealogy(object):
         if isinstance(new_genealogy, Genealogy) and existing_individual in self.__individuals.values() and new_genealogy_individual in new_genealogy.individuals.values():
             self.add_disconnected_genealogy(new_genealogy)
             self.link_individual(existing_individual, new_genealogy_individual, relationship)
-    
-    
+
+
     def add_disconnected_genealogy(self, new_genealogy):
         '''
         Add another disconnected genealogy to the existing one.
@@ -163,8 +160,8 @@ class Genealogy(object):
             family = families[sfl.family_reference]
             if existing_individual.reference != family.husband_reference:
                 spouse = self.get_individual_by_ref(family.husband_reference)
-                self.__spouses[existing_individual.reference] = spouse
-                self.__spouses[family.husband_reference] = existing_individual
+                self.G.add_edge(existing_individual, spouse, relationship = self.RELATIONSHIP_PARTNER)
+                self.G.add_edge(spouse, existing_individual, relationship = self.RELATIONSHIP_PARTNER)
 
 
     def add_new_family(self, new_family):
@@ -222,8 +219,6 @@ class Genealogy(object):
                     self.remove_family(family)
         if individual.reference in self.__individuals.keys():
             del self.__individuals[individual.reference]
-        if individual.reference in self.__spouses.keys():
-            del self.__spouses[individual.reference]
         if individual in self.G:
             self.G.remove_node(individual)
 
@@ -336,11 +331,6 @@ class Genealogy(object):
                 family.wife_reference = new_reference if family.wife_reference == old_reference else family.wife_reference
                 for child_reference in family.children_references:
                     child_reference = new_reference if child_reference == old_reference else child_reference
-            if self.__spouses.get(old_reference, None):
-                spouse = self.__spouses[old_reference]
-                del self.__spouses[old_reference]
-                self.__spouses[new_reference] = spouse
-                self.__spouses[spouse.reference] = individual
     
     
     def add_and_link_individual(self, new_individual, existing_individual, relationship):
@@ -368,6 +358,11 @@ class Genealogy(object):
         individual_a.add_family_reference_as_partner(family_reference)
         individual_b.add_family_reference_as_partner(family_reference)
         return family_reference
+
+
+    def get_relationship(self, individual_a, individual_b):
+        # TODO: IMPLEMENT
+        pass
 
 
     def create_new_family_with_parent_child(self, parent, child):
@@ -442,8 +437,8 @@ class Genealogy(object):
                     if not family.has_children() and not family.get_partner_of(individual_b):
                         self.remove_family(family)
                         individual_b.remove_family_as_partner(family.reference)  
-        self.__spouses[individual_a.reference] = individual_b
-        self.__spouses[individual_b.reference] = individual_a
+        self.G.add_edge(individual_a, individual_b, relationship = self.RELATIONSHIP_PARTNER)
+        self.G.add_edge(individual_b, individual_a, relationship = self.RELATIONSHIP_PARTNER)
     
 
     def link_child_to_existing_family(self, child, family_reference):
@@ -576,9 +571,9 @@ class Genealogy(object):
         if not family:
             family = self.__families[individual_a.spouse_to_family_links[0].family_reference]
         family.remove_individual_reference(individual_a.reference)
-        individual_a.spouse_to_family_links  = [spouse_link for spouse_link in individual_a.spouse_to_family_links if spouse_link.family_reference != family.reference]
-        del self.__spouses[individual_a.reference]
-        del self.__spouses[individual_b.reference]
+        individual_a.spouse_to_family_links = [spouse_link for spouse_link in individual_a.spouse_to_family_links if spouse_link.family_reference != family.reference]
+        self.__G.remove_edge(individual_a, individual_b)
+        self.__G.remove_edge(individual_b, individual_a)
         
     
     def un_link_siblings(self, individual_a, individual_b):
@@ -663,7 +658,7 @@ class Genealogy(object):
         Returns partner of individual
         :param individual: Individual to get partner of
         '''
-        return self.__spouses.get(individual.reference)
+        return next((i for i in self.G.neighbors(individual) if self.G.edges[(individual,i)]['relationship']==self.RELATIONSHIP_PARTNER), None)
 
 
     def get_individual_by_ref(self, reference: str) -> Individual:
@@ -688,7 +683,7 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return list(self.G.predecessors(individual))
+            return list((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] in (self.RELATIONSHIP_MOTHER, self.RELATIONSHIP_FATHER)))
 
 
     def get_children_of(self, individual):
@@ -697,7 +692,7 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return list(self.G.successors(individual))
+            return list((i for i in self.G.successors(individual) if self.G.edges[(individual, i)]['relationship'] in (self.RELATIONSHIP_MOTHER, self.RELATIONSHIP_FATHER)))
 
 
     def get_father_of(self, individual: Individual) -> Individual:
@@ -706,7 +701,7 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return next((i for i in self.G.predecessors(individual) if i.is_male()), None)
+            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_FATHER), None)
 
 
     def get_mother_of(self, individual: Individual) -> Individual:
@@ -715,7 +710,7 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return next((i for i in self.G.predecessors(individual) if i.is_female()), None)
+            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_MOTHER), None)
 
 
     def get_siblings_of(self, individual):
@@ -744,7 +739,7 @@ class Genealogy(object):
         return descendants
 
 
-    def get_ancestors_of(self, individual):
+    def get_ancestors_of(self, individual, seen = None):
         '''
         Returns a list of ancestors of individual
         :param individual: Individual
@@ -752,7 +747,7 @@ class Genealogy(object):
         if individual in self.G:
             mother = self.get_mother_of(individual)
             father = self.get_father_of(individual)
-            return list(filter(None, [mother, father])) + list(self.get_ancestors_of(mother)) + list(self.get_ancestors_of(father))
+            return list(dict.fromkeys(list(filter(None, [mother, father])) + list(self.get_ancestors_of(mother)) + list(self.get_ancestors_of(father))))
         return []
 
 
@@ -792,10 +787,6 @@ class Genealogy(object):
         return self.__repositories
 
 
-    def get_spouses(self):
-        return self.__spouses
-
-
     def set_g(self, value):
         self.__G = value
 
@@ -822,10 +813,6 @@ class Genealogy(object):
 
     def set_repositories(self, value):
         self.__repositories = value
-
-
-    def set_spouses(self, value):
-        self.__spouses = value
 
 
     def del_g(self):
@@ -856,9 +843,6 @@ class Genealogy(object):
         del self.__repositories
 
 
-    def del_spouses(self):
-        del self.__spouses
-
     G = property(get_g, set_g, del_g, "Directional graph containing father-to-child and mother-to-child relationships")
     individuals = property(get_individuals, set_individuals, del_individuals, "Dictionary of individuals, whose keys are the individuals' references")
     families = property(get_families, set_families, del_families, "Dictionary of families, whose keys are the families' references")
@@ -866,4 +850,3 @@ class Genealogy(object):
     sources = property(get_sources, set_sources, del_sources, "Dictionary of sources, whose keys are the sources' references")
     multimedia = property(get_multimedia, set_multimedia, del_multimedia, "Dictionary of multimedia objects, whose keys are the multimedia' references")
     repositories = property(get_repositories, set_repositories, del_repositories, "Dictionary of repositories, whose keys are the repositories' references")
-    spouses = property(get_spouses, set_spouses, del_spouses, "Dictionary of partners, whose keys are the other partner's reference")
