@@ -1,6 +1,6 @@
 import gedcom.tags
 from abc import abstractclassmethod
-from gedcom import gedcom_file
+import gedcom.gedcom_file as gf
 
 class Record():
     '''
@@ -10,7 +10,7 @@ class Record():
         pass
     
     def parse_gedcom(self, gedcom_lines):
-        return gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        return gf.get_gedcom_relevant_lines(gedcom_lines)
     
     @abstractclassmethod
     def get_gedcom_repr(self, level):
@@ -308,7 +308,7 @@ class Header(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         scope = ""
         index = 0
         while index < len(relevant_lines):
@@ -413,7 +413,7 @@ class Header(Record):
         if self.__source_system_data_date:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+3, gedcom.tags.GEDCOM_TAG_DATE, self.__source_system_data_date)
         if self.__source_system_data_copyright:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__source_system_data_copyright, gedcom.tags.GEDCOM_TAG_COPYRIGHT, level+3, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__source_system_data_copyright, gedcom.tags.GEDCOM_TAG_COPYRIGHT, level+3, gedcom.tags.MAX_TEXT_LENGTH))
         if self.__destination_system:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_DESTINATION, self.__destination_system)
         if self.__transmission_date:
@@ -443,7 +443,7 @@ class Header(Record):
             gedcom_repr = "%s\n%s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_PLACE)
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_FORMAT, self.__place_form)
         if self.__note:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__note, gedcom.tags.GEDCOM_TAG_NOTE, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__note, gedcom.tags.GEDCOM_TAG_NOTE, level+1, gedcom.tags.MAX_TEXT_LENGTH))
         return gedcom_repr
     source_system_id = property(get_source_system_id, set_source_system_id, del_source_system_id, "source_system_id's docstring")
     source_system_version = property(get_source_system_version, set_source_system_version, del_source_system_version, "source_system_version's docstring")
@@ -521,15 +521,6 @@ class Family(Record):
             else:
                 self.__children_references.remove(indi_ref)
 
-    def populate_references(self, env):
-        if isinstance(env, gedcom_file.GedcomFile):
-            if self.__husband_reference:
-                self.__husband = env.individuals[self.__husband_reference]
-            if self.__wife_reference:
-                self.__wife = env.individuals[self.__wife_reference]
-            for child in self.__children_references:
-                self.__children.append(env.individuals[child])
-    
     def __str__(self):
         return self.__reference
     
@@ -713,7 +704,7 @@ class Family(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         while index < len(relevant_lines):
@@ -1159,7 +1150,7 @@ class Individual(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         while index < len(relevant_lines):
@@ -1460,7 +1451,7 @@ class Multimedia(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
@@ -1630,7 +1621,7 @@ class Note(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
@@ -1682,7 +1673,7 @@ class Note(Record):
         return len(relevant_lines)
     
     def get_gedcom_repr(self, level=0):
-        gedcom_repr = gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
+        gedcom_repr = gf.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
         gedcom_repr = gedcom_repr[0:gedcom_repr.find(' ')] + " " + self.__reference + " " + gedcom_repr[gedcom_repr.find(' ')+1:]
         for user_reference_number in self.__user_reference_numbers:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_REFERENCE, user_reference_number[0])
@@ -1798,7 +1789,7 @@ class Repository(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
@@ -1915,7 +1906,7 @@ class SourceEvent(Record):
 
         
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         index = 0
         while index < len(relevant_lines):
             line = gedcom_lines[index]
@@ -2152,7 +2143,7 @@ class Source(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level      
@@ -2272,15 +2263,15 @@ class Source(Record):
         for note in self.__data_notes:
             gedcom_repr = "%s\n%s" % (gedcom_repr, note.get_gedcom_repr(level+2))
         if self.__source_originator:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__source_originator, gedcom.tags.GEDCOM_TAG_AUTHOR, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__source_originator, gedcom.tags.GEDCOM_TAG_AUTHOR, level+1, gedcom.tags.MAX_TEXT_LENGTH))
         if self.__source_title:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__source_title, gedcom.tags.GEDCOM_TAG_TITLE, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__source_title, gedcom.tags.GEDCOM_TAG_TITLE, level+1, gedcom.tags.MAX_TEXT_LENGTH))
         if self.__source_filled_by:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_NAME_ABBREVIATION, self.__source_filled_by)
         if self.__source_publication_facts:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__source_publication_facts, gedcom.tags.GEDCOM_TAG_PUBLICATION, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__source_publication_facts, gedcom.tags.GEDCOM_TAG_PUBLICATION, level+1, gedcom.tags.MAX_TEXT_LENGTH))
         if self.__text_from_source:
-            gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__text_from_source, gedcom.tags.GEDCOM_TAG_TEXT, level+1, gedcom.tags.MAX_TEXT_LENGTH))
+            gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__text_from_source, gedcom.tags.GEDCOM_TAG_TEXT, level+1, gedcom.tags.MAX_TEXT_LENGTH))
         for source in self.__source_repository_citations:
             gedcom_repr = "%s\n%s" % (gedcom_repr, source.get_gedcom_repr(level+1))
         for user_reference_number in self.__user_reference_numbers:
@@ -2448,7 +2439,7 @@ class Submission(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
@@ -2646,7 +2637,7 @@ class Submitter(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
         index = 0
         starting_level = relevant_lines[0].level
@@ -2890,7 +2881,7 @@ class AddressStructure(Record):
     
     def parse_gedcom(self, gedcom_lines):
         valid_top_level_tags = [gedcom.tags.GEDCOM_TAG_ADDRESS, gedcom.tags.GEDCOM_TAG_PHONE, gedcom.tags.GEDCOM_TAG_EMAIL, gedcom.tags.GEDCOM_TAG_FAX, gedcom.tags.GEDCOM_TAG_WEB]
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines, valid_top_level_tags)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines, valid_top_level_tags)
         index = 0
         while index < len(relevant_lines):
             line = gedcom_lines[index]
@@ -2925,7 +2916,7 @@ class AddressStructure(Record):
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
-        gedcom_repr = gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__address_line, gedcom.tags.GEDCOM_TAG_ADDRESS, level, gedcom.tags.MAX_TEXT_LENGTH)
+        gedcom_repr = gf.split_text_for_gedcom(self.__address_line, gedcom.tags.GEDCOM_TAG_ADDRESS, level, gedcom.tags.MAX_TEXT_LENGTH)
         if self.__address_line1:
             gedcom_repr = "%s\n%s %s %s" % (gedcom_repr,level+1, gedcom.tags.GEDCOM_TAG_ADDRESS_LINE1, self.__address_line1)
         if self.__address_line2:
@@ -3006,7 +2997,7 @@ class ChangeDate(Record):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__date = relevant_lines[1].value
         index = 2
         starting_level = relevant_lines[0].level
@@ -3094,7 +3085,7 @@ class ChildToFamilyLink(Record):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__family_reference = relevant_lines[0].value
         index = 0
         starting_level = relevant_lines[0].level
@@ -3289,7 +3280,7 @@ class EventDetail(Record):
         del self._multimedia_links
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines, gedcom.tags.EVENT_DETAIL_TAGS)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines, gedcom.tags.EVENT_DETAIL_TAGS)
         index = 0
         if len(relevant_lines):
             starting_level = relevant_lines[0].level
@@ -3446,7 +3437,7 @@ class FamilyEventDetail(EventDetail):
 
     def parse_gedcom(self, gedcom_lines):
         valid_top_level_tags = gedcom.tags.EVENT_DETAIL_TAGS + [gedcom.tags.GEDCOM_TAG_HUSBAND, gedcom.tags.GEDCOM_TAG_WIFE]
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines, valid_top_level_tags)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines, valid_top_level_tags)
         index = 0
         scope = ""
         while index < len(relevant_lines):
@@ -3523,7 +3514,7 @@ class FamilyEventStructure(FamilyEventDetail):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__tag = relevant_lines[0].tag
         index = 0
         while index < len(relevant_lines):
@@ -3633,7 +3624,7 @@ class IndividualAttributeStructure(IndividualEventDetail):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__tag = relevant_lines[0].tag
         starting_level = gedcom_lines[0].level
         index = 0
@@ -3669,7 +3660,7 @@ class IndividualAttributeStructure(IndividualEventDetail):
         if self.__content:
             gedcom_repr = "%s %s" % (gedcom_repr, self.__content)
         if self.__physical_description:
-            gedcom_repr = gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__physical_description, gedcom.tags.GEDCOM_TAG_PHYSICAL_DESCRIPTION, level, gedcom.tags.MAX_TEXT_LENGTH) 
+            gedcom_repr = gf.split_text_for_gedcom(self.__physical_description, gedcom.tags.GEDCOM_TAG_PHYSICAL_DESCRIPTION, level, gedcom.tags.MAX_TEXT_LENGTH) 
         if super().get_gedcom_repr(level + 1):
             gedcom_repr = "%s\n%s" % (gedcom_repr, super().get_gedcom_repr(level + 1))
         return gedcom_repr
@@ -3760,7 +3751,7 @@ class IndividualEventStructure(IndividualEventDetail):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__tag = relevant_lines[0].tag
         index = 0
         while index < len(relevant_lines):
@@ -3890,7 +3881,7 @@ class MultimediaLink(Record):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         if "@" in relevant_lines[0].value:
                 self.__reference = relevant_lines[0].value
         else:
@@ -3956,7 +3947,7 @@ class NoteStructure(Record):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         if "@" in relevant_lines[0].get_value():
             self.__reference = relevant_lines[0].get_value()
         else:
@@ -3971,7 +3962,7 @@ class NoteStructure(Record):
         if self.__reference:
             return "%s %s %s" % (level, gedcom.tags.GEDCOM_TAG_NOTE, self.__reference)
         else:
-            return gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
+            return gf.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_NOTE, level, gedcom.tags.MAX_TEXT_LENGTH)
     reference = property(get_reference, set_reference, del_reference, "reference's docstring")
     text = property(get_text, set_text, del_text, "text's docstring")
 
@@ -4149,7 +4140,7 @@ class PersonalNameStructure(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         starting_level = relevant_lines[0].level
         self.__name = relevant_lines[0].value
         index = 0
@@ -4421,7 +4412,7 @@ class SourceCitation(Record):
 
     
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         if "@" in relevant_lines[0].value:
             # pointer to source record
             self.__reference = relevant_lines[0].value
@@ -4502,11 +4493,11 @@ class SourceCitation(Record):
             if self.__data_date:
                 gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+2, gedcom.tags.GEDCOM_TAG_DATE, self.__data_date)
             if self.__text:
-                gedcom_repr = "%s\n%s" % (gedcom_repr, gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+2, gedcom.tags.MAX_TEXT_LENGTH))
+                gedcom_repr = "%s\n%s" % (gedcom_repr, gf.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+2, gedcom.tags.MAX_TEXT_LENGTH))
         else:                                
-            gedcom_repr = gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__description, gedcom.tags.GEDCOM_TAG_SOURCE, level, gedcom.tags.MAX_TEXT_LENGTH)
+            gedcom_repr = gf.split_text_for_gedcom(self.__description, gedcom.tags.GEDCOM_TAG_SOURCE, level, gedcom.tags.MAX_TEXT_LENGTH)
             if self.__text:
-                gedcom_repr = gedcom_repr + '\n' + gedcom.gedcom_file.GedcomFile.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+1, gedcom.tags.MAX_TEXT_LENGTH)
+                gedcom_repr = gedcom_repr + '\n' + gf.split_text_for_gedcom(self.__text, gedcom.tags.GEDCOM_TAG_TEXT, level+1, gedcom.tags.MAX_TEXT_LENGTH)
         for multimedia in self.__multimedia_link:
             gedcom_repr = "%s\n%s" % (gedcom_repr, multimedia.get_gedcom_repr(level+1))
         for note in self.__notes:
@@ -4559,7 +4550,7 @@ class SpouseToFamilyLink(Record):
 
 
     def parse_gedcom(self, gedcom_lines):
-        relevant_lines = gedcom.gedcom_file.GedcomFile.get_gedcom_relevant_lines(gedcom_lines)
+        relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__family_reference = relevant_lines[0].value
         index = 0
         starting_level = relevant_lines[0].level

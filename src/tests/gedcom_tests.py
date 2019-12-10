@@ -1,7 +1,7 @@
 import unittest
 import os.path
 import gedcom.structures
-from gedcom.gedcom_file import GedcomFile, GedcomLine
+from gedcom.gedcom_file import GedcomLine
 
 def file_to_string(file_path):
     with open(file_path, 'r') as file:
@@ -450,28 +450,6 @@ class TestSubmitterRecord(unittest.TestCase):
         read_file = file_to_string(filepath)
         self.assertEqual(read_file, record.get_gedcom_repr(starting_gedcom_level), error_message)
 
-class TestGedcom(unittest.TestCase):
-    maxDiff = None
-
-    def simpleCall(self, file_name):
-        filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/" + file_name)
-        error_message = "\n" + "GEDCOM file unit test error parsing " + filepath
-        gedcom = GedcomFile()
-        gedcom.parse_gedcom(filepath)
-        read_file = file_to_string(filepath)
-        self.assertEqual(read_file, gedcom.get_gedcom_repr(), error_message)
-
-    def testGedcomSimple(self):
-        self.simpleCall("simple.ged")
-
-    def testGedcomComplex(self):
-        input_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/allged.ged")
-        compare_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/allged_compare.ged")
-        error_message = "\n" + "GEDCOM file unit test error parsing " + input_filepath
-        gedcom = GedcomFile()
-        gedcom.parse_gedcom(input_filepath)
-        compare_file = file_to_string(compare_filepath)
-        self.assertEqual(compare_file, gedcom.get_gedcom_repr(), error_message)
 
 if __name__ == "__main__":
 

@@ -1,11 +1,11 @@
 import networkx as nx
 from _version import __version__
-from gedcom.structures import Individual, Header, Family, ChildToFamilyLink,\
-    SpouseToFamilyLink
-from gedcom.gedcom_file import GedcomFile
+import gedcom.structures as gd
+import gedcom.gedcom_file as gf
+from gedcom import structures
 import re
 import gc
-from gedcom import structures
+import gedcom.tags
 
 class Genealogy(object):
     '''
@@ -29,14 +29,13 @@ class Genealogy(object):
         Dictionary of repositories, whose keys are the repositories' references
     '''
     
-    RELATIONSHIP_FATHER = "0"
-    RELATIONSHIP_MOTHER = "1"
-    RELATIONSHIP_CHILD = "2"
-    RELATIONSHIP_PARTNER = "3"
-    RELATIONSHIP_SIBLING = "4"
+    RELATIONSHIP_PARENT = "GENITORE"
+    RELATIONSHIP_CHILD = "FIGLIO"
+    RELATIONSHIP_PARTNER = "PARTNER"
+    RELATIONSHIP_SIBLING = "FRATELLO/SORELLA"
 
 
-    def __init__(self, gedcom_file = None):
+    def __init__(self, input_path = None):
         '''
         Instantiates a Genealogy class, optionally starting from a GedcomFile object
         :param gedcom_file: GedcomFile object created starting from a GEDCOM file
@@ -50,8 +49,8 @@ class Genealogy(object):
         self.__multimedia = {}
         self.__repositories = {}
         self.__max_indexes = {"INDIVIDUALS": 0, "FAMILIES": 0, "NOTES": 0, "SOURCES": 0, "MULTIMEDIA": 0, "REPOSITORIES": 0}
-        if gedcom_file:
-            self.import_gedcom_file(gedcom_file)
+        if input_path:
+            self.import_gedcom_file(input_path)
 
 
     def get_individuals_list(self):
@@ -68,20 +67,56 @@ class Genealogy(object):
         return self.__families.values()
 
 
-    def import_gedcom_file(self, gedcom_file: GedcomFile):
+    def import_gedcom_file(self, input_path):
         '''
-        Populates a Genealogy object starting from a GedcomFile
-        :param gedcom_file: GedcomFile object
+        It parses a GEDCOM file in input_path and populate header and records 
+        GEDCOM version accepted is 5.5.1
+        :param input_path: input file path of GEDCOM file (e.g. "C:\\users\\public\\mytree.ged")
         '''
-        self.__individuals = gedcom_file.individuals
-        self.__families = gedcom_file.families
-        self.__notes = gedcom_file.notes
-        self.__sources = gedcom_file.sources
-        self.__multimedia = gedcom_file.objects
-        self.__repositories = gedcom_file.repositories
+        gedcom_lines_list = []
+        with open(input_path, mode='r', encoding='utf-8-sig') as content_file:
+            content = content_file.readlines()
+        for index, line in enumerate(content):
+            if gf.is_valid_gedcom_line(line):
+                gedcom_lines_list.append(gf.GedcomLine(line, index))
+        # HEADER record is mandatory and must be the first one
+        self.__header = gd.Header()
+        parsed_lines = self.__header.parse_gedcom(gedcom_lines_list)
+        for line_zero_index in [line for line in gedcom_lines_list[parsed_lines:] if line.level==0]:
+            # Submission record is optional
+            if line_zero_index.tag == gedcom.tags.GEDCOM_TAG_INDIVIDUAL:
+                record = gd.Individual()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__individuals[record.reference] = record
+            elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_FAMILY:
+                record = gd.Family()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__families[record.reference] = record
+            elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_OBJECT:
+                record = gd.Multimedia()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__multimedia[record.reference] = record
+            elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_NOTE:
+                record = gd.Note()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__notes[record.reference] = record
+            elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_REPOSITORY:
+                record = gd.Repository()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__repositories[record.reference] = record
+            elif line_zero_index.tag == gedcom.tags.GEDCOM_TAG_SOURCE:
+                record = gd.Source()
+                record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
+                self.__sources[record.reference] = record
+            elif line_zero_index.tag in (gedcom.tags.GEDCOM_TAG_SUBMITTER, gedcom.tags.GEDCOM_TAG_SUBMISSION) or line_zero_index.is_user_defined_tag():
+                continue
+            elif line_zero_index.is_last_gedcom_line():
+                break
+            else:
+                break
         for individual in self.__individuals.values():
             self.populate_relationships_graph(individual, self.__individuals, self.__families)
-    
+
     
     def link_genealogy(self, new_genealogy, existing_individual, new_genealogy_individual, relationship):
         '''
@@ -151,11 +186,11 @@ class Genealogy(object):
             if (families[cfl.family_reference].husband_reference):
                 individual_father = individuals[families[cfl.family_reference].husband_reference]
                 self.G.add_node(individual_father)
-                self.G.add_edge(individual_father, existing_individual, relationship = self.RELATIONSHIP_FATHER)
+                self.G.add_edge(individual_father, existing_individual, relationship = self.RELATIONSHIP_PARENT)
             if (self.__families[cfl.family_reference].wife_reference):
                 individual_mother = individuals[families[cfl.family_reference].wife_reference]
                 self.G.add_node(individual_mother)
-                self.G.add_edge(individual_mother, existing_individual, relationship = self.RELATIONSHIP_MOTHER)
+                self.G.add_edge(individual_mother, existing_individual, relationship = self.RELATIONSHIP_PARENT)
         for sfl in existing_individual.spouse_to_family_links:
             family = families[sfl.family_reference]
             if existing_individual.reference != family.husband_reference:
@@ -350,7 +385,7 @@ class Genealogy(object):
         :param individual_a: Individual as family partner, either husband or wife
         :param individual_b: Individual as family partner, either husband or wife
         '''
-        family = Family()
+        family = gd.Family()
         family.add_partner_reference(individual_a)
         family.add_partner_reference(individual_b)
         family_reference = self.add_new_family(family)
@@ -358,11 +393,72 @@ class Genealogy(object):
         individual_a.add_family_reference_as_partner(family_reference)
         individual_b.add_family_reference_as_partner(family_reference)
         return family_reference
+    
+    
+    def get_list_of_linking_individuals(self, individual_a, individual_b):
+        '''
+        Returns a list of people connecting individual_a to individual_b
+        :param individual_a: Starting individual
+        :type individual_a: Individual
+        :param individual_b: Target individual
+        :type individual_b: Individual
+        '''
+        if individual_a == individual_b:
+            return [individual_a]
+        if nx.has_path(self.G.to_undirected(as_view=True), individual_a, individual_b):
+            return nx.shortest_path(self.G.to_undirected(as_view=True), individual_a, individual_b)
+        else:
+            return []
+
+
+    def family_relationships_definitions(self, relationships):
+#         https://pypi.org/project/kanren/
+#         http://minikanren.org/
+#         https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
+#         https://www.tutorialspoint.com/artificial_intelligence_with_python/artificial_intelligence_with_python_logic_programming.htm
+        
+#         fam_rel = {self.RELATIONSHIP_PARENT : 'Genitore',
+#                    [self.RELATIONSHIP_PARENT] * 2  : 'Nonno',
+#                    [self.RELATIONSHIP_PARENT] * 3  : 'Bisnonno',
+#                    [self.RELATIONSHIP_PARENT] * 4  : 'Trisavolo',
+#                    [self.RELATIONSHIP_PARENT] * 5  : 'Quadrisavolo'
+#                    }
+        
+#         rep = {"condition1": "", "condition2": "text"} # define desired replacements here
+#         
+#         # use these three lines to do the replacement
+#         rep = dict((re.escape(k), v) for k, v in rep.iteritems()) 
+#         #Python 3 renamed dict.iteritems to dict.items so use rep.items() for latest versions
+#         pattern = re.compile("|".join(rep.keys()))
+#         text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
+        
+        if relationships == [self.RELATIONSHIP_PARENT]: return "Padre"
+        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD]: return "Fratello/sorella"
+        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Nonno"
+        elif relationships == [self.RELATIONSHIP_CHILD]: return "Figlio/a"
+        elif relationships == [self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Nipote"
+        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Cugino"
+        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Bisnonno"
+        else:
+            return "__PARENTE__"
+        #TODO: implement
+
+    
+    def get_reverse_relationship(self, relationship):
+        if relationship == self.RELATIONSHIP_PARENT: return self.RELATIONSHIP_CHILD
+        elif relationship == self.RELATIONSHIP_CHILD: return self.RELATIONSHIP_PARENT
 
 
     def get_relationship(self, individual_a, individual_b):
-        # TODO: IMPLEMENT
-        pass
+        # TODO: implement
+        linking_people = self.get_list_of_linking_individuals(individual_a, individual_b)
+        list_of_relationships = []
+        for i in range(len(linking_people)-1):
+            if self.G.has_edge(linking_people[i+1], linking_people[i]):
+                list_of_relationships.append(self.G[linking_people[i+1]][linking_people[i]]['relationship'])
+            else:
+                list_of_relationships.append(self.get_reverse_relationship(self.G[linking_people[i]][linking_people[i+1]]['relationship']))
+        return self.family_relationships_definitions(list_of_relationships)
 
 
     def create_new_family_with_parent_child(self, parent, child):
@@ -371,7 +467,7 @@ class Genealogy(object):
         :param parent: Individual as family partner, either husband or wife
         :param child:Individual as family child
         '''
-        family = Family()
+        family = gd.Family()
         family_reference = self.add_new_family(family)
         family.reference = family_reference
         self.link_parent_to_existing_family(parent, family_reference)
@@ -448,7 +544,7 @@ class Genealogy(object):
         :param family_reference: reference of the family where child will be linked to
         '''
         if not child.reference in [child_ref for child_ref in self.__families[family_reference].children_references]:
-            child_to_family_link = ChildToFamilyLink()
+            child_to_family_link = gd.ChildToFamilyLink()
             child_to_family_link.family_reference = family_reference
             child.child_to_family_links.append(child_to_family_link)
             self.__families[family_reference].children_references.append(child.reference)
@@ -461,7 +557,7 @@ class Genealogy(object):
         :param parent: Individual as a parent, either husband or wife (depending on sex)
         :param family_reference: reference of the family where parent will be linked to
         '''
-        spouse_to_family_link = SpouseToFamilyLink()
+        spouse_to_family_link = gd.SpouseToFamilyLink()
         spouse_to_family_link.family_reference = family_reference
         if family_reference not in [stfl.family_reference for stfl in parent.spouse_to_family_links]:
             parent.spouse_to_family_links.append(spouse_to_family_link)
@@ -485,11 +581,8 @@ class Genealogy(object):
         else:
             # create a new family and add it to the parent
             self.create_new_family_with_parent_child(parent, child)
-        if parent.is_male():
-            self.G.add_edge(parent, child, relationship = self.RELATIONSHIP_FATHER)
-        elif parent.is_female():
-            self.G.add_edge(parent, child, relationship = self.RELATIONSHIP_MOTHER)
-
+        self.G.add_edge(parent, child, relationship = self.RELATIONSHIP_PARENT)
+        
 
     def link_siblings(self, individual_a, individual_b, family=None):
         '''
@@ -504,10 +597,7 @@ class Genealogy(object):
         family.add_child(individual_a)
         self.link_child_to_existing_family(individual_a, family.reference)
         for parent in self.get_parents_of(individual_b):
-            if parent.is_male():
-                self.G.add_edge(parent, individual_a, relationship = self.RELATIONSHIP_FATHER)
-            elif parent.is_female():
-                self.G.add_edge(parent, individual_a, relationship = self.RELATIONSHIP_MOTHER)
+            self.G.add_edge(parent, individual_a, relationship = self.RELATIONSHIP_PARENT)
 
 
     def link_individual(self, individual_a, individual_b, new_relationship, family=None):
@@ -521,12 +611,6 @@ class Genealogy(object):
         # Links individual_a to individual_b with new_relationship in family
         if individual_a == individual_b:
             return
-        if new_relationship == self.RELATIONSHIP_FATHER and self.get_father_of(individual_b):
-            # if a father is already present, then return
-            return
-        elif new_relationship == self.RELATIONSHIP_MOTHER and self.get_mother_of(individual_b):
-            # if a mother is already present, then return
-            return
         elif new_relationship == self.RELATIONSHIP_PARTNER and self.get_partner_of(individual_b):
             # if the same partner already present as partner, then return
             return
@@ -536,7 +620,7 @@ class Genealogy(object):
         elif new_relationship == self.RELATIONSHIP_SIBLING and self.get_siblings_of(individual_a) == individual_b:
             # if individual_a is already a sibling of individual_b, then return
             return
-        if new_relationship in (self.RELATIONSHIP_FATHER, self.RELATIONSHIP_MOTHER):
+        if new_relationship == self.RELATIONSHIP_PARENT:
             self.link_child(individual_b, individual_a, family)
         elif new_relationship == self.RELATIONSHIP_PARTNER:
             self.link_partner(individual_a, individual_b)
@@ -597,12 +681,6 @@ class Genealogy(object):
         '''
         if individual_a == individual_b:
             return
-        if relationship == self.RELATIONSHIP_FATHER and self.get_father_of(individual_b) != individual_a:
-            # if individual_a is not father of individual_b then return
-            return
-        elif relationship == self.RELATIONSHIP_MOTHER and self.get_mother_of(individual_b) != individual_a:
-            # if individual_a is not mother of individual_b then return
-            return
         elif relationship == self.RELATIONSHIP_PARTNER and self.get_partner_of(individual_b) != individual_a:
             # if individual_a isn not partner of individual_b then return
             return
@@ -612,7 +690,7 @@ class Genealogy(object):
         elif relationship == self.RELATIONSHIP_SIBLING and not (individual_b in self.get_siblings_of(individual_a)):
             # if individual_a is not a sibling of individual_b, then return
             return
-        if relationship in (self.RELATIONSHIP_FATHER, self.RELATIONSHIP_MOTHER, family):
+        if relationship == self.RELATIONSHIP_PARENT:
             self.un_link_child(individual_b, individual_a)
         elif relationship == self.RELATIONSHIP_PARTNER:
             self.un_link_partner(individual_a, individual_b)
@@ -635,25 +713,20 @@ class Genealogy(object):
         return self.__max_indexes[records_type]
     
     
-    def export_gedcom_file(self) -> GedcomFile:
+    def get_gedcom(self) -> str:
         '''
-        Returns a new GedcomFile starting from this object
+        Returns a GEDCOM representation of Genealogy as a string
         '''
-        gedcom_file = GedcomFile()
-        gedcom_file.header = Header(__version__, "pigen", "5.5")
-        gedcom_file.records = {}
-        for records in (self.__individuals, self.__families, self.__notes, self.__sources, self.__multimedia, self.__repositories): gedcom_file.records.update(records)
-        return gedcom_file
-    
-    
-    def get_gedcom(self):
-        '''
-        Returns the corresponding GedcomFile's GEDCOM representation
-        '''
-        return self.export_gedcom_file().get_gedcom_repr()
+        header = gd.Header(__version__, "pigen", "5.5")
+        gedcom_repr = header.get_gedcom_repr(0)
+        records = {**self.__individuals, **self.__families, **self.__notes, **self.__sources, **self.__multimedia, **self.__repositories}
+        for record in (records.values()):
+            gedcom_repr = "%s\n%s" % (gedcom_repr, record.get_gedcom_repr(0))
+        gedcom_repr = "%s\n0 %s" % (gedcom_repr, gedcom.tags.GEDCOM_TAG_TRAILER)
+        return gedcom_repr
 
 
-    def get_partner_of(self, individual: Individual) -> Individual:
+    def get_partner_of(self, individual: gd.Individual) -> gd.Individual:
         '''
         Returns partner of individual
         :param individual: Individual to get partner of
@@ -661,7 +734,7 @@ class Genealogy(object):
         return next((i for i in self.G.neighbors(individual) if self.G.edges[(individual,i)]['relationship']==self.RELATIONSHIP_PARTNER), None)
 
 
-    def get_individual_by_ref(self, reference: str) -> Individual:
+    def get_individual_by_ref(self, reference: str) -> gd.Individual:
         '''
         Returns the Individual identified by reference
         :param reference: reference of the individual
@@ -669,7 +742,7 @@ class Genealogy(object):
         return self.__individuals[reference]
 
 
-    def get_family_by_ref(self, reference: str) -> Family:
+    def get_family_by_ref(self, reference: str) -> gd.Family:
         '''
         Returns the Family identified by reference
         :param reference: reference of the family
@@ -683,7 +756,7 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return list((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] in (self.RELATIONSHIP_MOTHER, self.RELATIONSHIP_FATHER)))
+            return list((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_PARENT))
 
 
     def get_children_of(self, individual):
@@ -692,25 +765,25 @@ class Genealogy(object):
         :param individual: Individual
         '''
         if individual in self.G:
-            return list((i for i in self.G.successors(individual) if self.G.edges[(individual, i)]['relationship'] in (self.RELATIONSHIP_MOTHER, self.RELATIONSHIP_FATHER)))
+            return list((i for i in self.G.successors(individual) if self.G.edges[(individual, i)]['relationship'] == self.RELATIONSHIP_PARENT))
 
 
-    def get_father_of(self, individual: Individual) -> Individual:
+    def get_father_of(self, individual: gd.Individual) -> gd.Individual:
         '''
         Returns the father of individual as Individual, None if not present
         :param individual: Individual
         '''
         if individual in self.G:
-            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_FATHER), None)
+            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_PARENT and i.is_male()), None)
 
 
-    def get_mother_of(self, individual: Individual) -> Individual:
+    def get_mother_of(self, individual: gd.Individual) -> gd.Individual:
         '''
         Returns the mother of individual as Individual, None if not present
         :param individual: Individual
         '''
         if individual in self.G:
-            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_MOTHER), None)
+            return next((i for i in self.G.predecessors(individual) if self.G.edges[(i, individual)]['relationship'] == self.RELATIONSHIP_PARENT and i.is_female()), None)
 
 
     def get_siblings_of(self, individual):

@@ -559,7 +559,7 @@ GEDCOM_TAG_WILL = "WILL"
 #
 # PIGEN custom tags and list of tags
 #
-INDIVIDUAL_NAME_UNKNOWN = "<Sconosciuto>"
+INDIVIDUAL_NAME_UNKNOWN = "<Unknown>"
 
 MAX_TEXT_LENGTH = 200
 

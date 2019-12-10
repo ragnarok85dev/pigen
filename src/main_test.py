@@ -5,9 +5,10 @@ import networkx as nx
 import ete3
 from ete3.treeview.main import TreeStyle
 import os
+import kanren
 
 def print_gedcom(genealogy, filepath):
-    exported_gedcom = genealogy.export_gedcom_file()
+    exported_gedcom = genealogy.get_gedcom()
     f = open(filepath, "w")
     f.write(exported_gedcom.get_gedcom_repr())
     f.close()
@@ -53,11 +54,38 @@ def main():
 
     genealogy = Genealogy(GedcomFile("C:\\Users\\gricca4\\LocalData\\pigen\\example_MyHeritage.ged"))
     giacomo_ricca = genealogy.get_individual_by_ref("@I500008@")
+    gb_ricca = genealogy.get_individual_by_ref("@I500001@")
+    giuseppe_ricca = genealogy.get_individual_by_ref("@I500004@")
+    giorgio_ricca = genealogy.get_individual_by_ref("@I500003@")
+    patric_dolmeta = genealogy.get_individual_by_ref("@I500011@")
     marco_corradi = genealogy.get_individual_by_ref("@I500719@")
+    
+#     parent = kanren.Relation()
+#     partner = kanren.Relation()
+#     
+#     for (u, v, d) in genealogy.G.edges(data=True):
+#         if u and v:
+#             if d['relationship'] == Genealogy.RELATIONSHIP_PARENT:
+#                 kanren.facts(parent, (u, v))
+#             elif d['relationship'] == Genealogy.RELATIONSHIP_PARTNER:
+#                 kanren.facts(partner, (u, v))
+#                 kanren.facts(partner, (v, u))
+# 
+#     def grandparent(x, z):
+#         y = kanren.var()
+#         return kanren.conde((parent(x, y), parent(y, z)))
+#     
+#     x = kanren.var()
+#     solution = kanren.run(1, x, parent(x, giacomo_ricca))
+#     for i in solution:
+#         print (i)
+#     solution = kanren.run(2, x, grandparent(x, giacomo_ricca))
+#     for i in solution:
+#         print (i)
 
-    if nx.has_path(genealogy.G.to_undirected(), giacomo_ricca, marco_corradi):
-        for node in nx.shortest_path(genealogy.G.to_undirected(), giacomo_ricca, marco_corradi):
-            print (node)
+#     result = genealogy.get_relationship(giorgio_ricca, patric_dolmeta)
+#     print (result)
+    
 
 #     f = open("C:\\Users\\gricca4\\LocalData\\pigen\\all_trees.txt", "w")
 #     for individual in genealogy.individuals.values():
