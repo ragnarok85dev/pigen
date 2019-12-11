@@ -1,5 +1,5 @@
 #
-# GEDCOM 5.5 standard tags
+# GEDCOM 5.5.1 standard tags
 #
 
 # ABBREVIATION

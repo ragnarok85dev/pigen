@@ -16,7 +16,7 @@ setup(
     long_description=readme,
     author='Giacomo Ricca',
     author_email='giacomo.ricca@gmail.com',
-    url='https://github.com/kennethreitz/samplemod',
+    url='https://github.com/ragnarok85dev/pigen',
     license=the_license,
     packages=find_packages(exclude=('tests', 'docs'))
 )

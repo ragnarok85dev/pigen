@@ -3,6 +3,7 @@ import genealogy
 from gedcom.structures import Individual, Family
 from genealogy import Genealogy
 import os.path
+from tests.gedcom_tests import file_to_string
 
 class GenealogyTests(unittest.TestCase):
     empty_gen_gedcom = ("0 HEAD\n"
@@ -278,6 +279,13 @@ class GenealogyTests(unittest.TestCase):
         for child in [g.get_individual_by_ref("@I3@"), g.get_individual_by_ref("@I4@")]:
             self.assertEqual(child.child_to_family_links[0].family_reference, new_ref)
 
+
+    def test_gedcom_import_export(self):
+        input_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/allged.ged")
+        compare_filepath = os.path.join(os.path.abspath(__file__), "../gedcom_files/allged_compare.ged")
+        g = Genealogy(input_filepath)
+        compare_file = file_to_string(compare_filepath)
+        self.assertEqual(compare_file, g.get_gedcom())
 
 if __name__ == "__main__":
     unittest.main()

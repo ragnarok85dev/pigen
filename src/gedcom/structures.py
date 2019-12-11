@@ -5,6 +5,7 @@ import gedcom.gedcom_file as gf
 class Record():
     '''
     Record is the parent class of all GEDCOM structures and substructures classes
+    GEDCOM structures are defined as per GEDCOM 5.5.1 grammar, described in http://www.phpgedview.net/ged551-5.pdf
     '''
     def __init__(self):
         pass
@@ -3015,6 +3016,7 @@ class ChangeDate(Record):
                     index += parsed_lines
                     continue
         return len(relevant_lines)
+
 
     def get_gedcom_repr(self, level):
         gedcom_repr = "%s %s" % (level, gedcom.tags.GEDCOM_TAG_DATE_CHANGE)

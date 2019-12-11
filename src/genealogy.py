@@ -79,9 +79,8 @@ class Genealogy(object):
         for index, line in enumerate(content):
             if gf.is_valid_gedcom_line(line):
                 gedcom_lines_list.append(gf.GedcomLine(line, index))
-        # HEADER record is mandatory and must be the first one
-        self.__header = gd.Header()
-        parsed_lines = self.__header.parse_gedcom(gedcom_lines_list)
+        # HEADER record is mandatory and must be the first one; however in this implementation the content will be discarded
+        parsed_lines = gd.Header().parse_gedcom(gedcom_lines_list)
         for line_zero_index in [line for line in gedcom_lines_list[parsed_lines:] if line.level==0]:
             # Submission record is optional
             if line_zero_index.tag == gedcom.tags.GEDCOM_TAG_INDIVIDUAL:
@@ -108,6 +107,8 @@ class Genealogy(object):
                 record = gd.Source()
                 record.parse_gedcom(gedcom_lines_list[line_zero_index.gedcom_index:])
                 self.__sources[record.reference] = record
+            # Content of SUBMISSION and SUBMITTER records will be discarded in this implementation
+            # Content of user-defined tags will be discarded in this implementation
             elif line_zero_index.tag in (gedcom.tags.GEDCOM_TAG_SUBMITTER, gedcom.tags.GEDCOM_TAG_SUBMISSION) or line_zero_index.is_user_defined_tag():
                 continue
             elif line_zero_index.is_last_gedcom_line():
@@ -193,7 +194,7 @@ class Genealogy(object):
                 self.G.add_edge(individual_mother, existing_individual, relationship = self.RELATIONSHIP_PARENT)
         for sfl in existing_individual.spouse_to_family_links:
             family = families[sfl.family_reference]
-            if existing_individual.reference != family.husband_reference:
+            if family.husband_reference and existing_individual.reference != family.husband_reference:
                 spouse = self.get_individual_by_ref(family.husband_reference)
                 self.G.add_edge(existing_individual, spouse, relationship = self.RELATIONSHIP_PARTNER)
                 self.G.add_edge(spouse, existing_individual, relationship = self.RELATIONSHIP_PARTNER)
@@ -410,8 +411,52 @@ class Genealogy(object):
         else:
             return []
 
+    
+    def reduce_family_relationships(self, base, next_r):
+        if base == "": return next_r
+        elif base == self.RELATIONSHIP_PARENT and next_r == self.RELATIONSHIP_PARENT: return "NONNO"
+        elif base == "NONNO" and next_r == self.RELATIONSHIP_PARENT: return "BISNONNO"
+        elif base == "NONNO" and next_r == self.RELATIONSHIP_CHILD: return "ZIO"
+        elif base == "ZIO" and next_r == self.RELATIONSHIP_CHILD: return "CUGINO"
+        elif base == "BISNONNO" and next_r == self.RELATIONSHIP_PARENT: return "TRISAVOLO"
+        elif base == "BISNONNO" and next_r == self.RELATIONSHIP_CHILD: return "NONNO"
+        elif base == "TRISAVOLO" and next_r == self.RELATIONSHIP_PARENT: return "ANTENATO DIRETTO_5"
+        elif base == "TRISAVOLO" and next_r == self.RELATIONSHIP_CHILD: return "BISNONNO"
+        elif "ANTENATO DIRETTO_" in base and next_r == self.RELATIONSHIP_PARENT: return base[:base.find('_')+1] + str(int(base[base.find('_')+1:])+1)
+        elif "ANTENATO DIRETTO_5" in base and next_r == self.RELATIONSHIP_CHILD: return "TRISAVOLO"
+        elif "ANTENATO DIRETTO_" in base and next_r == self.RELATIONSHIP_CHILD: return base[:base.find('_')+1] + str(int(base[base.find('_')+1:])-1)
+        elif base == "GENITORE" and next_r == self.RELATIONSHIP_CHILD: return "FRATELLO/SORELLA"
+        elif base == "FRATELLO/SORELLA" and next_r == self.RELATIONSHIP_PARTNER: return "COGNATO"
+        elif base == "FRATELLO/SORELLA" and next_r == self.RELATIONSHIP_CHILD: return "NIPOTE"
+        elif base == "NIPOTE" and next_r == self.RELATIONSHIP_CHILD: return "PRO-NIPOTE"
+        elif base == "PRO-NIPOTE" and next_r == self.RELATIONSHIP_CHILD: return "DISCENDENTE DIRETTO_4"
+        elif "DISCENDENTE DIRETTO_4" in base and next_r == self.RELATIONSHIP_CHILD: return "PRO-NIPOTE"
+        elif "DISCENDENTE DIRETTO_" in base and next_r == self.RELATIONSHIP_CHILD: return base[:base.find('_')+1] + str(int(base[base.find('_')+1:])+1)
+        else: return "PARENTE"
+
 
     def family_relationships_definitions(self, relationships):
+        reduced_relationships = []
+        for i in range(len(relationships)):
+            next_r = relationships[i][1]
+            if i==0:
+                base = self.reduce_family_relationships("", next_r)
+            else:
+                reduced = self.reduce_family_relationships(base, next_r)
+                if reduced == "PARENTE":
+                    reduced_relationships.append(base)
+                    base = next_r
+                else:
+                    base = reduced
+                print (base)
+        reduced_relationships.append(base)
+        return '-'.join(reduced_relationships)
+            
+        
+#         for i, rel in enumerate(relationships):
+#             if i+1 <= len(relationships):
+#                 print (str(rel[0]) + ' ' + str(rel[1]))
+
 #         https://pypi.org/project/kanren/
 #         http://minikanren.org/
 #         https://scholarworks.iu.edu/dspace/bitstream/handle/2022/8777/Byrd_indiana_0093A_10344.pdf
@@ -432,15 +477,15 @@ class Genealogy(object):
 #         pattern = re.compile("|".join(rep.keys()))
 #         text = pattern.sub(lambda m: rep[re.escape(m.group(0))], text)
         
-        if relationships == [self.RELATIONSHIP_PARENT]: return "Padre"
-        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD]: return "Fratello/sorella"
-        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Nonno"
-        elif relationships == [self.RELATIONSHIP_CHILD]: return "Figlio/a"
-        elif relationships == [self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Nipote"
-        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Cugino"
-        elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Bisnonno"
-        else:
-            return "__PARENTE__"
+#         if relationships == [self.RELATIONSHIP_PARENT]: return "Padre"
+#         elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD]: return "Fratello/sorella"
+#         elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Nonno"
+#         elif relationships == [self.RELATIONSHIP_CHILD]: return "Figlio/a"
+#         elif relationships == [self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Nipote"
+#         elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_CHILD, self.RELATIONSHIP_CHILD]: return "Cugino"
+#         elif relationships == [self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT, self.RELATIONSHIP_PARENT]: return "Bisnonno"
+#         else:
+#             return "__PARENTE__"
         #TODO: implement
 
     
@@ -455,9 +500,9 @@ class Genealogy(object):
         list_of_relationships = []
         for i in range(len(linking_people)-1):
             if self.G.has_edge(linking_people[i+1], linking_people[i]):
-                list_of_relationships.append(self.G[linking_people[i+1]][linking_people[i]]['relationship'])
+                list_of_relationships.append((linking_people[i+1], self.G[linking_people[i+1]][linking_people[i]]['relationship']))
             else:
-                list_of_relationships.append(self.get_reverse_relationship(self.G[linking_people[i]][linking_people[i+1]]['relationship']))
+                list_of_relationships.append((linking_people[i+1], self.get_reverse_relationship(self.G[linking_people[i]][linking_people[i+1]]['relationship'])))
         return self.family_relationships_definitions(list_of_relationships)
 
 

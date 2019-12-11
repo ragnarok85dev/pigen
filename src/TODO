@@ -1,3 +1,19 @@
+PER LA PUBBLICAZIONE
+- completare unit tests
+	- Genealogy.add_disconnected_genealogy
+	- Genealogy.link_genealogy
+- Gestione di (merge, insert, delete, update):
+	- Sources
+	- Notes
+	- Objects
+	- Repositories
+- stampa tipo ETE3 per tests/debug?
+- verificare pacchetto
+
+
+-------------------------------------------------
+
+
 https://docs.python-guide.org/writing/structure/
 
 Metodi di Genealogy
