@@ -117,7 +117,7 @@ class GenealogyTests(unittest.TestCase):
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
         father_ref = g.add_new_individual(pinco_pallino)
         son_ref = g.add_new_individual(tizio_pallino)
-        g.link_individual(pinco_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_PARENT)
+        g.link_individual(pinco_pallino, tizio_pallino, genealogy.Relationship.PARENT)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
         self.assertEqual(len(g.get_individuals_list()), 2)
@@ -138,7 +138,7 @@ class GenealogyTests(unittest.TestCase):
         tizio_pallino = Individual("Tizio", "Pallino", "M", "11-mar-1920", "26-nov-1970")
         mother_ref = g.add_new_individual(pinca_caia)
         son_ref = g.add_new_individual(tizio_pallino)
-        g.link_individual(pinca_caia, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_PARENT)
+        g.link_individual(pinca_caia, tizio_pallino, genealogy.Relationship.PARENT)
         family_ref = pinca_caia.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
         self.assertEqual(g.get_mother_of(tizio_pallino), pinca_caia)
@@ -153,7 +153,7 @@ class GenealogyTests(unittest.TestCase):
         pinca_caia = Individual("Pinca", "Caia", "F", "11-mar-1901", "26-nov-1960")
         husb_ref = g.add_new_individual(pinco_pallino)
         wife_ref = g.add_new_individual(pinca_caia)
-        g.link_individual(pinco_pallino, pinca_caia, genealogy.Genealogy.RELATIONSHIP_PARTNER)
+        g.link_individual(pinco_pallino, pinca_caia, genealogy.Relationship.PARTNER)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
         self.assertEqual(len(g.get_individuals_list()), 2)
@@ -177,9 +177,9 @@ class GenealogyTests(unittest.TestCase):
         husb_ref = g.add_new_individual(pinco_pallino)
         wife_ref = g.add_new_individual(pinca_caia)
         son_ref = g.add_new_individual(tizio_pallino)
-        g.link_individual(pinco_pallino, pinca_caia, genealogy.Genealogy.RELATIONSHIP_PARTNER)
-        g.link_individual(pinca_caia, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_PARENT)
-        g.link_individual(pinco_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_PARENT)
+        g.link_individual(pinco_pallino, pinca_caia, genealogy.Relationship.PARTNER)
+        g.link_individual(pinca_caia, tizio_pallino, genealogy.Relationship.PARENT)
+        g.link_individual(pinco_pallino, tizio_pallino, genealogy.Relationship.PARENT)
         family_ref = pinco_pallino.spouse_to_family_links[0].family_reference
         family = g.get_family_by_ref(family_ref)
         self.assertEqual(len(g.get_individuals_list()), 3)
@@ -198,10 +198,10 @@ class GenealogyTests(unittest.TestCase):
         tizio_pallino = g.get_individual_by_ref("@I3@")
         caia_pallino = Individual("Caia", "Pallino", "F", "11-mar-1921", "26-nov-1971")
         g.add_new_individual(caia_pallino)
-        g.link_individual(caia_pallino, tizio_pallino, genealogy.Genealogy.RELATIONSHIP_SIBLING)
+        g.link_individual(caia_pallino, tizio_pallino, genealogy.Relationship.SIBLING)
         self.assertEqual(list(g.get_siblings_of(tizio_pallino))[0], caia_pallino)
         self.assertEqual(list(g.get_siblings_of(caia_pallino))[0], tizio_pallino)
-        g.un_link_individual(tizio_pallino, caia_pallino, genealogy.Genealogy.RELATIONSHIP_SIBLING)
+        g.un_link_individual(tizio_pallino, caia_pallino, genealogy.Relationship.SIBLING)
         self.assertEqual(len(g.get_siblings_of(tizio_pallino)), 0)
         self.assertEqual(len(g.get_siblings_of(caia_pallino)), 0)
          
@@ -210,7 +210,7 @@ class GenealogyTests(unittest.TestCase):
         g = self.test_create_simple_family()
         father = g.get_individual_by_ref("@I1@")
         son = g.get_individual_by_ref("@I3@")
-        g.un_link_individual(father, son, genealogy.Genealogy.RELATIONSHIP_PARENT)
+        g.un_link_individual(father, son, genealogy.Relationship.PARENT)
         self.assertNotIn(son, list(g.get_children_of(father)))
         self.assertIsNone(g.get_father_of(son))
  
@@ -219,7 +219,7 @@ class GenealogyTests(unittest.TestCase):
         g = self.load_sample_family()
         mother = g.get_individual_by_ref("@I2@")
         son = g.get_individual_by_ref("@I3@")
-        g.un_link_individual(son, mother, genealogy.Genealogy.RELATIONSHIP_CHILD)
+        g.un_link_individual(son, mother, genealogy.Relationship.CHILD)
         self.assertNotIn(son, list(g.get_children_of(mother)))
         self.assertIsNone(g.get_mother_of(son))
  
@@ -228,7 +228,7 @@ class GenealogyTests(unittest.TestCase):
         g = self.load_sample_family()
         father = g.get_individual_by_ref("@I1@")
         mother = g.get_individual_by_ref("@I2@")
-        g.un_link_individual(father, mother, genealogy.Genealogy.RELATIONSHIP_PARTNER)
+        g.un_link_individual(father, mother, genealogy.Relationship.PARTNER)
         self.assertIsNone(g.get_partner_of(father))
         self.assertIsNone(g.get_partner_of(mother))
      
@@ -286,6 +286,19 @@ class GenealogyTests(unittest.TestCase):
         g = Genealogy(input_filepath)
         compare_file = file_to_string(compare_filepath)
         self.assertEqual(compare_file, g.get_gedcom())
+    
+    
+    def test_add_disconnected_genealogy(self):
+        # 1. load sample family GEDCOM file as a Genealogy named sample_genealogy
+        # 2. load again sample family GEDCOM file as another Genealogy named sample_genealogy_2
+        # 3. add sample_genealogy_2 to sample_genealogy
+        # 4. check GEDCOM representation of sample_genealogy is the same of pre-defined double_sample_family.ged GEDCOM file
+        sample_genealogy = self.load_sample_family()
+        sample_genealogy_2 = self.load_sample_family()
+        sample_genealogy.add_disconnected_genealogy(sample_genealogy_2)
+        compare_genealogy_file = file_to_string(os.path.join(os.path.abspath(__file__), "../gedcom_files/sample_family_doubled.ged"))
+        self.assertEqual(compare_genealogy_file, sample_genealogy.get_gedcom())
+
 
 if __name__ == "__main__":
     unittest.main()
