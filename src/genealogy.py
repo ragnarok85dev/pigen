@@ -8,11 +8,22 @@ import gc
 import gedcom.tags
 from enum import Enum
 
+
 class Relationship(Enum):
-    PARENT = "GENITORE"
-    CHILD = "FIGLIO"
-    PARTNER = "PARTNER"
-    SIBLING = "FRATELLO/SORELLA"
+    PARENT = "0"
+    CHILD = "1"
+    PARTNER = "2"
+    SIBLING = "3"
+
+
+class RecordType(Enum):
+    INDIVIDUALS = "INDIVIDUALS"
+    FAMILIES = "FAMILIES"
+    NOTES = "NOTES"
+    SOURCES = "SOURCES"
+    OBJECTS = "MULTIMEDIA"
+    REPOSITORIES = "REPOSITORIES"  
+
 
 class Genealogy(object):
     '''
@@ -36,7 +47,6 @@ class Genealogy(object):
         Dictionary of repositories, whose keys are the repositories' references
     '''
 
-
     def __init__(self, input_path = None):
         '''
         Instantiates a Genealogy class, optionally starting from a GedcomFile object
@@ -50,7 +60,12 @@ class Genealogy(object):
         self.__sources = {}
         self.__multimedia = {}
         self.__repositories = {}
-        self.__max_indexes = {"INDIVIDUALS": 0, "FAMILIES": 0, "NOTES": 0, "SOURCES": 0, "MULTIMEDIA": 0, "REPOSITORIES": 0}
+        self.__max_indexes = {RecordType.INDIVIDUALS: 0, 
+                              RecordType.FAMILIES: 0, 
+                              RecordType.NOTES: 0, 
+                              RecordType.SOURCES: 0, 
+                              RecordType.OBJECTS: 0, 
+                              RecordType.REPOSITORIES: 0}
         if input_path:
             self.import_gedcom_file(input_path)
 
@@ -60,8 +75,8 @@ class Genealogy(object):
         Return all the individuals of the genealogy as a list 
         '''
         return self.__individuals.values()
-    
-    
+
+
     def get_families_list(self):
         '''
         Return all the families of the genealogy as a list 
@@ -120,7 +135,7 @@ class Genealogy(object):
         for individual in self.__individuals.values():
             self.populate_relationships_graph(individual, self.__individuals, self.__families)
 
-    
+
     def link_genealogy(self, new_genealogy, existing_individual, new_genealogy_individual, relationship):
         '''
         Add another genealogy to the existing one, linking the existing_genealogy to new_genealogy_individual, the latter belonging to new_genealogy 
@@ -147,33 +162,33 @@ class Genealogy(object):
         '''
         if isinstance(new_genealogy, Genealogy):
             for note in list(new_genealogy.notes.values()):
-                new_ref = "@N" + str(self.get_next_available_gedcom_id(self.__notes, "NOTES")) + "@"
+                new_ref = "@N" + str(self.get_next_available_gedcom_id(self.__notes, RecordType.NOTES)) + "@"
                 new_genealogy.rename_note_reference(note.reference, new_ref)
                 self.__notes[new_ref] = note
             for source in list(new_genealogy.sources.values()):
-                new_ref = "@S" + str(self.get_next_available_gedcom_id(self.__sources, "SOURCES")) + "@"
+                new_ref = "@S" + str(self.get_next_available_gedcom_id(self.__sources, RecordType.SOURCES)) + "@"
                 new_genealogy.rename_source_reference(source.reference, new_ref)
                 self.__sources[new_ref] = source
             for multimedia in list(new_genealogy.multimedia.values()):
-                new_ref = "@O" + str(self.get_next_available_gedcom_id(self.__multimedia, "MULTIMEDIA")) + "@"
+                new_ref = "@O" + str(self.get_next_available_gedcom_id(self.__multimedia, RecordType.OBJECTS)) + "@"
                 new_genealogy.rename_multimedia_reference(multimedia.reference, new_ref)
                 self.__multimedia[new_ref] = multimedia
             for repository in list(new_genealogy.repositories.values()):
-                new_ref = "@R" + str(self.get_next_available_gedcom_id(self.__repositories, "REPOSITORIES")) + "@"
+                new_ref = "@R" + str(self.get_next_available_gedcom_id(self.__repositories, RecordType.REPOSITORIES)) + "@"
                 new_genealogy.rename_repository_reference(repository.reference, new_ref)
                 self.__repositories[new_ref] = repository
             for family in list(new_genealogy.families.values()):
-                new_ref = "@F" + str(self.get_next_available_gedcom_id(self.__families, "FAMILIES")) + "@"
+                new_ref = "@F" + str(self.get_next_available_gedcom_id(self.__families, RecordType.FAMILIES)) + "@"
                 new_genealogy.rename_family_reference(family.reference, new_ref)
                 self.__families[new_ref] = family
             for individual in list(new_genealogy.individuals.values()):
-                new_ref = "@I" + str(self.get_next_available_gedcom_id(self.__individuals, "INDIVIDUALS")) + "@"
+                new_ref = "@I" + str(self.get_next_available_gedcom_id(self.__individuals, RecordType.INDIVIDUALS)) + "@"
                 new_genealogy.rename_individual_reference(individual.reference, new_ref)
                 self.__individuals[new_ref] = individual                
             for individual in new_genealogy.individuals.values():
                 self.populate_relationships_graph(individual, self.__individuals, self.__families)
-    
-    
+
+
     def populate_relationships_graph(self, existing_individual, individuals, families):
         '''
         Adds an existing individual to the genealogy
@@ -202,6 +217,23 @@ class Genealogy(object):
                 self.G.add_edge(spouse, existing_individual, relationship = Relationship.PARTNER)
 
 
+    def add_new_record(self, new_record, records, reference_prefix, record_type):
+        '''
+        Add a new record to the genealogy
+        :param new_record: One of the following: individual, family, note, object/multimedia, repository, source 
+        :type new_record: One of the following: Individual, Family, Note, Multimedia, Repository, Source
+        :param records: Genealogy dictionary of records
+        :type records: Dict
+        :param reference_prefix: @I for individual, @F for family, @N for note, @S for source, @O for multimedia, @R for repository
+        :type reference_prefix: str
+        :param record_type: One of the following: RecordType.INDIVIDUALS, RecordType.FAMILIES, RecordType.OBJECTS, RecordType.NOTES, RecordType.SOURCES, RecordType.REPOSITORIES
+        :type record_type: RecordType
+        '''
+        new_record.reference = reference_prefix + str(self.get_next_available_gedcom_id(records.keys(), record_type)) + "@"
+        records[new_record.reference] = new_record
+        return new_record.reference
+
+
     def add_new_family(self, new_family):
         '''
         Add a new family to the genealogy
@@ -210,11 +242,9 @@ class Genealogy(object):
         :return: new family reference
         :rtype: str
         '''
-        new_family.reference = "@F" + str(self.get_next_available_gedcom_id(self.__families.keys(), "FAMILIES")) + "@"
-        self.__families[new_family.reference] = new_family
-        return new_family.reference
-    
-    
+        return self.add_new_record(new_family, self.__families, "@F", RecordType.FAMILIES)
+
+
     def add_new_individual(self, new_individual):
         '''
         Add a new individual to the genealogy
@@ -223,12 +253,54 @@ class Genealogy(object):
         :return: new individual reference
         :rtype: str
         '''
-        new_individual.reference = "@I" + str(self.get_next_available_gedcom_id(self.__individuals.keys(), "INDIVIDUALS")) + "@"
-        self.__individuals[new_individual.reference] = new_individual
         self.__G.add_node(new_individual)
-        return new_individual.reference
-    
-    
+        return self.add_new_record(new_individual, self.__individuals, "@I", RecordType.INDIVIDUALS)
+
+
+    def add_new_note(self, new_note):
+        '''
+        Add a new Note to the genealogy
+        :param new_note: new note to be added
+        :type new_individual: gedcom.Note
+        :return: new note reference
+        :rtype: str
+        '''
+        return self.add_new_record(new_note, self.__notes, "@N", RecordType.NOTES)
+
+
+    def add_new_source(self, new_source):
+        '''
+        Add a new Source to the genealogy
+        :param new_note: new source to be added
+        :type new_individual: gedcom.Source
+        :return: new source reference
+        :rtype: str
+        '''
+        return self.add_new_record(new_source, self.__sources, "@S", RecordType.SOURCES)
+
+
+    def add_new_multimedia(self, new_multimedia):
+        '''
+        Add a new Multimedia to the genealogy
+        :param new_note: new multimedia to be added
+        :type new_individual: gedcom.Multimedia
+        :return: new multimedia reference
+        :rtype: str
+        '''
+        return self.add_new_record(new_multimedia, self.__multimedia, "@M", RecordType.OBJECTS)
+
+
+    def add_new_repository(self, new_repository):
+        '''
+        Add a new Repository to the genealogy
+        :param new_note: new repository to be added
+        :type new_individual: gedcom.Repository
+        :return: new repository reference
+        :rtype: str
+        '''
+        return self.add_new_record(new_repository, self.__repositories, "@R", RecordType.REPOSITORIES)
+
+
     def remove_family(self, family):
         '''
         Removes a family from the genealogy
@@ -236,8 +308,8 @@ class Genealogy(object):
         '''
         if family.reference in self.__families.keys():
             del self.__families[family.reference]
-    
-    
+
+
     def remove_individual(self, individual):
         '''
         Removes an individual from the genealogy
@@ -259,6 +331,62 @@ class Genealogy(object):
             del self.__individuals[individual.reference]
         if individual in self.G:
             self.G.remove_node(individual)
+
+
+    def remove_note(self, note_to_be_removed):
+        '''
+        Removes a note from the genealogy, including all its references
+        :param note: note to be removed
+        :type note: Note
+        '''
+        for record in [record for record in gc.get_objects() if isinstance(record, structures.Record) and hasattr(record, 'notes')]:
+            for i, note_structure in enumerate(record.notes):
+                if note_structure.reference == note_to_be_removed.reference:
+                    del record.notes[i]
+        if note_to_be_removed.reference in self.__notes.keys():
+            del self.__notes[note_to_be_removed.reference]
+
+
+    def remove_source(self, source_to_be_removed):
+        '''
+        Removes a source from the genealogy, including all its references
+        :param source: source to be removed
+        :type source: Source
+        '''
+        for record in [record for record in gc.get_objects() if isinstance(record, structures.Record) and hasattr(record, 'sources')]:
+            for i, source_citation in enumerate(record.sources):
+                if source_citation.reference == source_to_be_removed.reference:
+                    del record.sources[i]
+        if source_to_be_removed.reference in self.__sources.keys():
+            del self.__sources[source_to_be_removed.reference]
+
+
+    def remove_multimedia(self, multimedia_to_be_removed):
+        '''
+        Removes a multimedia from the genealogy, including all its references
+        :param multimedia: source to be removed
+        :type multimedia: Multimedia
+        '''
+        for record in [record for record in gc.get_objects() if isinstance(record, structures.Record) and hasattr(record, 'multimedia_links')]:
+            for i, multimedia_link in enumerate(record.multimedia_links):
+                if multimedia_link.reference == multimedia_to_be_removed.reference:
+                    del record.multimedia_links[i]
+        if multimedia_to_be_removed.reference in self.__multimedia.keys():
+            del self.__multimedia[multimedia_to_be_removed.reference]
+
+
+    def remove_repository(self, repository_to_be_removed):
+        '''
+        Removes a source from the genealogy, including all its references
+        :param source: source to be removed
+        :type source: Source
+        '''
+        for record in [record for record in gc.get_objects() if isinstance(record, structures.Record) and hasattr(record, 'repositories')]:
+            for i, repo in enumerate(record.repositories):
+                if repo.reference == repository_to_be_removed.reference:
+                    del record.repositories[i]
+        if repository_to_be_removed.reference in self.__repositories.keys():
+            del self.__repositories[repository_to_be_removed.reference]
 
 
     def rename_note_reference(self, old_reference, new_reference):
@@ -300,8 +428,8 @@ class Genealogy(object):
     def rename_multimedia_reference(self, old_reference, new_reference):
         '''
         Renames a MultimediaLink reference from old_reference to new_reference in the whole genealogy
-        :param old_reference: old/current reference code (e.g. @S12@)
-        :param new_reference: new/future reference code (e.g. @S23@)
+        :param old_reference: old/current reference code (e.g. @M12@)
+        :param new_reference: new/future reference code (e.g. @M23@)
         '''
         if old_reference in self.__multimedia.keys():
             multimedia_link = self.__multimedia[old_reference]
@@ -318,8 +446,8 @@ class Genealogy(object):
     def rename_repository_reference(self, old_reference, new_reference):
         '''
         Renames a repository reference from old_reference to new_reference in the whole genealogy
-        :param old_reference: old/current reference code (e.g. @S12@)
-        :param new_reference: new/future reference code (e.g. @S23@)
+        :param old_reference: old/current reference code (e.g. @R12@)
+        :param new_reference: new/future reference code (e.g. @R23@)
         '''
         if old_reference in self.__repositories.keys():
             repository = self.__repositories[old_reference]
@@ -381,8 +509,8 @@ class Genealogy(object):
         '''
         self.add_new_individual(new_individual)
         self.link_individual(new_individual, existing_individual, relationship)
-    
-    
+
+
     def create_new_family_with_partners(self, individual_a, individual_b):
         '''
         Creates a new family with individual_a and individual_b as partners (depending on the sex, one is husband, the other is wife)
@@ -398,7 +526,7 @@ class Genealogy(object):
         individual_b.add_family_reference_as_partner(family_reference)
         return family_reference
     
-    
+
     def get_list_of_linking_individuals(self, individual_a, individual_b):
         '''
         Returns a list of people connecting individual_a to individual_b
@@ -657,6 +785,7 @@ class Genealogy(object):
         '''
         Returns the first available GEDCOM ID number for a new record
         :param records: genealogy records to be taken into account
+        :param records_type: RecordType
         ''' 
         if len(records) == 0:
             return 1
@@ -789,86 +918,65 @@ class Genealogy(object):
     def get_g(self):
         return self.__G
 
-
     def get_individuals(self):
         return self.__individuals
-
 
     def get_families(self):
         return self.__families
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_sources(self):
         return self.__sources
 
-
     def get_multimedia(self):
         return self.__multimedia
-
 
     def get_repositories(self):
         return self.__repositories
 
-
     def set_g(self, value):
         self.__G = value
-
 
     def set_individuals(self, value):
         self.__individuals = value
 
-
     def set_families(self, value):
         self.__families = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_sources(self, value):
         self.__sources = value
-
 
     def set_multimedia(self, value):
         self.__multimedia = value
 
-
     def set_repositories(self, value):
         self.__repositories = value
-
 
     def del_g(self):
         del self.__G
 
-
     def del_individuals(self):
         del self.__individuals
-
 
     def del_families(self):
         del self.__families
 
-
     def del_notes(self):
         del self.__notes
-
 
     def del_sources(self):
         del self.__sources
 
-
     def del_multimedia(self):
         del self.__multimedia
 
-
     def del_repositories(self):
         del self.__repositories
-
 
     G = property(get_g, set_g, del_g, "Directional graph containing father-to-child and mother-to-child relationships")
     individuals = property(get_individuals, set_individuals, del_individuals, "Dictionary of individuals, whose keys are the individuals' references")

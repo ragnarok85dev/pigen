@@ -2,6 +2,7 @@ import gedcom.tags
 from abc import abstractclassmethod
 import gedcom.gedcom_file as gf
 
+
 class Record():
     '''
     Record is the parent class of all GEDCOM structures and substructures classes
@@ -16,6 +17,7 @@ class Record():
     @abstractclassmethod
     def get_gedcom_repr(self, level):
         pass
+
 
 class Header(Record):
     def __init__(self, source_system_version="", source_system_name="", gedcom_version=""):
@@ -47,267 +49,201 @@ class Header(Record):
     def get_source_system_id(self):
         return self.__source_system_id
 
-
     def get_source_system_version(self):
         return self.__source_system_version
-
 
     def get_source_system_name(self):
         return self.__source_system_name
 
-
     def get_source_system_corporate(self):
         return self.__source_system_corporate
-
 
     def get_source_system_corporate_address(self):
         return self.__source_system_corporate_address
 
-
     def get_source_system_data(self):
         return self.__source_system_data
-
 
     def get_source_system_data_date(self):
         return self.__source_system_data_date
 
-
     def get_source_system_data_copyright(self):
         return self.__source_system_data_copyright
-
 
     def get_destination_system(self):
         return self.__destination_system
 
-
     def get_transmission_date(self):
         return self.__transmission_date
-
 
     def get_transmission_date_time(self):
         return self.__transmission_date_time
 
-
     def get_submitter_record_reference(self):
         return self.__submitter_record_reference
-
 
     def get_submission_record_reference(self):
         return self.__submission_record_reference
 
-
     def get_file_name(self):
         return self.__file_name
-
 
     def get_copyright(self):
         return self.__copyright
 
-
     def get_gedcom_version(self):
         return self.__gedcom_version
-
 
     def get_gedcom_form(self):
         return self.__gedcom_form
 
-
     def get_character_set(self):
         return self.__character_set
-
 
     def get_character_set_version(self):
         return self.__character_set_version
 
-
     def get_language(self):
         return self.__language
-
 
     def get_place_form(self):
         return self.__place_form
 
-
     def get_note(self):
         return self.__note
-
 
     def set_source_system_id(self, value):
         self.__source_system_id = value
 
-
     def set_source_system_version(self, value):
         self.__source_system_version = value
-
 
     def set_source_system_name(self, value):
         self.__source_system_name = value
 
-
     def set_source_system_corporate(self, value):
         self.__source_system_corporate = value
-
 
     def set_source_system_corporate_address(self, value):
         self.__source_system_corporate_address = value
 
-
     def set_source_system_data(self, value):
         self.__source_system_data = value
-
 
     def set_source_system_data_date(self, value):
         self.__source_system_data_date = value
 
-
     def set_source_system_data_copyright(self, value):
         self.__source_system_data_copyright = value
-
 
     def set_destination_system(self, value):
         self.__destination_system = value
 
-
     def set_transmission_date(self, value):
         self.__transmission_date = value
-
 
     def set_transmission_date_time(self, value):
         self.__transmission_date_time = value
 
-
     def set_submitter_record_reference(self, value):
         self.__submitter_record_reference = value
-
 
     def set_submission_record_reference(self, value):
         self.__submission_record_reference = value
 
-
     def set_file_name(self, value):
         self.__file_name = value
-
 
     def set_copyright(self, value):
         self.__copyright = value
 
-
     def set_gedcom_version(self, value):
         self.__gedcom_version = value
-
 
     def set_gedcom_form(self, value):
         self.__gedcom_form = value
 
-
     def set_character_set(self, value):
         self.__character_set = value
-
 
     def set_character_set_version(self, value):
         self.__character_set_version = value
 
-
     def set_language(self, value):
         self.__language = value
-
 
     def set_place_form(self, value):
         self.__place_form = value
 
-
     def set_note(self, value):
         self.__note = value
-
 
     def del_source_system_id(self):
         del self.__source_system_id
 
-
     def del_source_system_version(self):
         del self.__source_system_version
-
 
     def del_source_system_name(self):
         del self.__source_system_name
 
-
     def del_source_system_corporate(self):
         del self.__source_system_corporate
-
 
     def del_source_system_corporate_address(self):
         del self.__source_system_corporate_address
 
-
     def del_source_system_data(self):
         del self.__source_system_data
-
 
     def del_source_system_data_date(self):
         del self.__source_system_data_date
 
-
     def del_source_system_data_copyright(self):
         del self.__source_system_data_copyright
-
 
     def del_destination_system(self):
         del self.__destination_system
 
-
     def del_transmission_date(self):
         del self.__transmission_date
-
 
     def del_transmission_date_time(self):
         del self.__transmission_date_time
 
-
     def del_submitter_record_reference(self):
         del self.__submitter_record_reference
-
 
     def del_submission_record_reference(self):
         del self.__submission_record_reference
 
-
     def del_file_name(self):
         del self.__file_name
-
 
     def del_copyright(self):
         del self.__copyright
 
-
     def del_gedcom_version(self):
         del self.__gedcom_version
-
 
     def del_gedcom_form(self):
         del self.__gedcom_form
 
-
     def del_character_set(self):
         del self.__character_set
-
 
     def del_character_set_version(self):
         del self.__character_set_version
 
-
     def del_language(self):
         del self.__language
-
 
     def del_place_form(self):
         del self.__place_form
 
-
     def del_note(self):
         del self.__note
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         scope = ""
@@ -469,6 +405,7 @@ class Header(Record):
     place_form = property(get_place_form, set_place_form, del_place_form, "place_form's docstring")
     note = property(get_note, set_note, del_note, "note's docstring")
 
+
 class Family(Record):
     def __init__(self):
         self.__reference = ""
@@ -543,167 +480,126 @@ class Family(Record):
     def get_restriction_notice(self):
         return self.__restriction_notice
 
-
     def get_family_event_structures(self):
         return self.__family_event_structures
-
 
     def get_husband_reference(self):
         return self.__husband_reference
 
-
     def get_wife_reference(self):
         return self.__wife_reference
-
 
     def get_children_references(self):
         return self.__children_references
 
-
     def get_number_children(self):
         return self.__number_children
-
 
     def get_submitter_records(self):
         return self.__submitter_records
 
-
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
-
 
     def get_automated_record_id(self):
         return self.__automated_record_id
 
-
     def get_change_date(self):
         return self.__change_date
-
 
     def get_notes(self):
         return self.__notes
 
-
     def get_sources(self):
         return self.__sources
-
 
     def get_multimedia_links(self):
         return self.__multimedia_links
 
-
     def set_reference(self, value):
         self.__reference = value
-
 
     def set_restriction_notice(self, value):
         self.__restriction_notice = value
 
-
     def set_family_event_structures(self, value):
         self.__family_event_structures = value
-
 
     def set_husband_reference(self, value):
         self.__husband_reference = value
 
-
     def set_wife_reference(self, value):
         self.__wife_reference = value
-
 
     def set_children_references(self, value):
         self.__children_references = value
 
-
     def set_number_children(self, value):
         self.__number_children = value
-
 
     def set_submitter_records(self, value):
         self.__submitter_records = value
 
-
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
-
 
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_sources(self, value):
         self.__sources = value
-
 
     def set_multimedia_links(self, value):
         self.__multimedia_links = value
 
-
     def del_reference(self):
         del self.__reference
-
 
     def del_restriction_notice(self):
         del self.__restriction_notice
 
-
     def del_family_event_structures(self):
         del self.__family_event_structures
-
 
     def del_husband_reference(self):
         del self.__husband_reference
 
-
     def del_wife_reference(self):
         del self.__wife_reference
-
 
     def del_children_references(self):
         del self.__children_references
 
-
     def del_number_children(self):
         del self.__number_children
-
 
     def del_submitter_records(self):
         del self.__submitter_records
 
-
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
-
 
     def del_automated_record_id(self):
         del self.__automated_record_id
 
-
     def del_change_date(self):
         del self.__change_date
-
 
     def del_notes(self):
         del self.__notes
 
-
     def del_sources(self):
         del self.__sources
-
 
     def del_multimedia_links(self):
         del self.__multimedia_links
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -821,6 +717,7 @@ class Family(Record):
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
     multimedia_links = property(get_multimedia_links, set_multimedia_links, del_multimedia_links, "multimedia_links's docstring")
 
+
 class Individual(Record):
     def __init__(self, first_name = "", last_name = "", sex = "", date_of_birth = "", date_of_death = ""):
         self.__reference = ""
@@ -865,16 +762,13 @@ class Individual(Record):
             event_death._date = date_of_death
             event_death.death_yes = "Y"
             self.__event_structures.append(event_death)
-    
-    
+
     def get_date_of_birth(self):
         return next((event._date for event in self.__event_structures if event.tag == gedcom.tags.GEDCOM_TAG_DEATH and event._date), None)
-    
-    
+        
     def get_date_of_death(self):
         return next((event._date for event in self.__event_structures if event.tag == gedcom.tags.GEDCOM_TAG_BIRTH and event._date), None)        
-    
-    
+        
     def move_family(self, source_family_reference, target_family_reference):
         # if the target family reference is already present in child_to_family_links, then it deletes the child_to_family_link having as source family the source_family_reference
         if target_family_reference in [child_link.family_reference for child_link in self.__child_to_family_links]:
@@ -913,243 +807,183 @@ class Individual(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_restriction_notice(self):
         return self.__restriction_notice
-
 
     def get_personal_name_structures(self):
         return self.__personal_name_structures
 
-
     def get_sex(self):
         return self.__sex
-
 
     def get_event_structures(self):
         return self.__event_structures
 
-
     def get_attribute_structures(self):
         return self.__attribute_structures
-
 
     def get_child_to_family_links(self):
         return self.__child_to_family_links
 
-
     def get_spouse_to_family_links(self):
         return self.__spouse_to_family_links
-
 
     def get_submitter_records(self):
         return self.__submitter_records
 
-
     def get_aliases(self):
         return self.__aliases
-
 
     def get_interest_more_research_ancestors(self):
         return self.__interest_more_research_ancestors
 
-
     def get_interest_more_research_descendants(self):
         return self.__interest_more_research_descendants
-
 
     def get_permanent_record_file_number(self):
         return self.__permanent_record_file_number
 
-
     def get_ancestral_file_number(self):
         return self.__ancestral_file_number
-
 
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
 
-
     def get_automated_record_id(self):
         return self.__automated_record_id
-
 
     def get_change_date(self):
         return self.__change_date
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_sources(self):
         return self.__sources
 
-
     def get_multimedia_links(self):
         return self.__multimedia_links
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_restriction_notice(self, value):
         self.__restriction_notice = value
-
 
     def set_personal_name_structures(self, value):
         self.__personal_name_structures = value
 
-
     def set_sex(self, value):
         self.__sex = value
-
 
     def set_event_structures(self, value):
         self.__event_structures = value
 
-
     def set_attribute_structures(self, value):
         self.__attribute_structures = value
-
 
     def set_child_to_family_links(self, value):
         self.__child_to_family_links = value
 
-
     def set_spouse_to_family_links(self, value):
         self.__spouse_to_family_links = value
-
 
     def set_submitter_records(self, value):
         self.__submitter_records = value
 
-
     def set_aliases(self, value):
         self.__aliases = value
-
 
     def set_interest_more_research_ancestors(self, value):
         self.__interest_more_research_ancestors = value
 
-
     def set_interest_more_research_descendants(self, value):
         self.__interest_more_research_descendants = value
-
 
     def set_permanent_record_file_number(self, value):
         self.__permanent_record_file_number = value
 
-
     def set_ancestral_file_number(self, value):
         self.__ancestral_file_number = value
-
 
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
 
-
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
-
 
     def set_change_date(self, value):
         self.__change_date = value
 
-
     def set_notes(self, value):
         self.__notes = value
-
 
     def set_sources(self, value):
         self.__sources = value
 
-
     def set_multimedia_links(self, value):
         self.__multimedia_links = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_restriction_notice(self):
         del self.__restriction_notice
-
 
     def del_personal_name_structures(self):
         del self.__personal_name_structures
 
-
     def del_sex(self):
         del self.__sex
-
 
     def del_event_structures(self):
         del self.__event_structures
 
-
     def del_attribute_structures(self):
         del self.__attribute_structures
-
 
     def del_child_to_family_links(self):
         del self.__child_to_family_links
 
-
     def del_spouse_to_family_links(self):
         del self.__spouse_to_family_links
-
 
     def del_submitter_records(self):
         del self.__submitter_records
 
-
     def del_aliases(self):
         del self.__aliases
-
 
     def del_interest_more_research_ancestors(self):
         del self.__interest_more_research_ancestors
 
-
     def del_interest_more_research_descendants(self):
         del self.__interest_more_research_descendants
-
 
     def del_permanent_record_file_number(self):
         del self.__permanent_record_file_number
 
-
     def del_ancestral_file_number(self):
         del self.__ancestral_file_number
-
 
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
 
-
     def del_automated_record_id(self):
         del self.__automated_record_id
-
 
     def del_change_date(self):
         del self.__change_date
 
-
     def del_notes(self):
         del self.__notes
-
 
     def del_sources(self):
         del self.__sources
 
-
     def del_multimedia_links(self):
         del self.__multimedia_links
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -1317,6 +1151,7 @@ class Individual(Record):
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
     multimedia_links = property(get_multimedia_links, set_multimedia_links, del_multimedia_links, "multimedia_links's docstring")
 
+
 class Multimedia(Record):
     def __init__(self):
         self.__reference = ""
@@ -1334,123 +1169,93 @@ class Multimedia(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_file(self):
         return self.__file
-
 
     def get_file_format(self):
         return self.__file_format
 
-
     def get_file_format_type(self):
         return self.__file_format_type
-
 
     def get_file_title(self):
         return self.__file_title
 
-
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
-
 
     def get_automated_record_id(self):
         return self.__automated_record_id
 
-
     def get_change_date(self):
         return self.__change_date
-
 
     def get_notes(self):
         return self.__notes
 
-
     def get_sources(self):
         return self.__sources
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_file(self, value):
         self.__file = value
-
 
     def set_file_format(self, value):
         self.__file_format = value
 
-
     def set_file_format_type(self, value):
         self.__file_format_type = value
-
 
     def set_file_title(self, value):
         self.__file_title = value
 
-
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
-
 
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_sources(self, value):
         self.__sources = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_file(self):
         del self.__file
-
 
     def del_file_format(self):
         del self.__file_format
 
-
     def del_file_format_type(self):
         del self.__file_format_type
-
 
     def del_file_title(self):
         del self.__file_title
 
-
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
-
 
     def del_automated_record_id(self):
         del self.__automated_record_id
 
-
     def del_change_date(self):
         del self.__change_date
-
 
     def del_notes(self):
         del self.__notes
 
-
     def del_sources(self):
         del self.__sources
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -1539,6 +1344,7 @@ class Multimedia(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
 
+
 class Note(Record):
     def __init__(self):
         self.__reference = ""
@@ -1552,75 +1358,57 @@ class Note(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_text(self):
         return self.__text
-
 
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
 
-
     def get_automated_record_id(self):
         return self.__automated_record_id
-
 
     def get_change_date(self):
         return self.__change_date
 
-
     def get_sources(self):
         return self.__sources
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_text(self, value):
         self.__text = value
-
 
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
 
-
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
-
 
     def set_change_date(self, value):
         self.__change_date = value
 
-
     def set_sources(self, value):
         self.__sources = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_text(self):
         del self.__text
-
 
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
 
-
     def del_automated_record_id(self):
         del self.__automated_record_id
-
 
     def del_change_date(self):
         del self.__change_date
 
-
     def del_sources(self):
         del self.__sources
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -1694,6 +1482,7 @@ class Note(Record):
     change_date = property(get_change_date, set_change_date, del_change_date, "change_date's docstring")
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
 
+
 class Repository(Record):
     def __init__(self):
         self.__reference = ""
@@ -1708,86 +1497,65 @@ class Repository(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_repository_name(self):
         return self.__repository_name
-
 
     def get_address(self):
         return self.__address
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
 
-
     def get_automated_record_id(self):
         return self.__automated_record_id
-
 
     def get_change_date(self):
         return self.__change_date
 
-
     def set_reference(self, value):
         self.__reference = value
-
 
     def set_repository_name(self, value):
         self.__repository_name = value
 
-
     def set_address(self, value):
         self.__address = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
-
 
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_repository_name(self):
         del self.__repository_name
-
 
     def del_address(self):
         del self.__address
 
-
     def del_notes(self):
         del self.__notes
-
 
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
 
-
     def del_automated_record_id(self):
         del self.__automated_record_id
 
-
     def del_change_date(self):
         del self.__change_date
-
     
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -1863,6 +1631,7 @@ class Repository(Record):
     automated_record_id = property(get_automated_record_id, set_automated_record_id, del_automated_record_id, "automated_record_id's docstring")
     change_date = property(get_change_date, set_change_date, del_change_date, "change_date's docstring")
 
+
 class SourceEvent(Record):
     def __init__(self):
         self.__event_recorded = ""
@@ -1873,39 +1642,30 @@ class SourceEvent(Record):
     def get_event_recorded(self):
         return self.__event_recorded
 
-
     def get_event_date(self):
         return self.__event_date
-
 
     def get_event_place(self):
         return self.__event_place
 
-
     def set_event_recorded(self, value):
         self.__event_recorded = value
-
 
     def set_event_date(self, value):
         self.__event_date = value
 
-
     def set_event_place(self, value):
         self.__event_place = value
-
 
     def del_event_recorded(self):
         del self.__event_recorded
 
-
     def del_event_date(self):
         del self.__event_date
-
 
     def del_event_place(self):
         del self.__event_place
 
-        
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         index = 0
@@ -1931,6 +1691,7 @@ class SourceEvent(Record):
     event_date = property(get_event_date, set_event_date, del_event_date, "event_date's docstring")
     event_place = property(get_event_place, set_event_place, del_event_place, "event_place's docstring")
 
+
 class Source(Record):
     def __init__(self):
         self.__reference = ""
@@ -1954,195 +1715,147 @@ class Source(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_data_tag(self):
         return self.__data_tag
-
 
     def get_data_events(self):
         return self.__data_events
 
-
     def get_data_responsible_agency(self):
         return self.__data_responsible_agency
-
 
     def get_data_notes(self):
         return self.__data_notes
 
-
     def get_source_originator(self):
         return self.__source_originator
-
 
     def get_source_title(self):
         return self.__source_title
 
-
     def get_source_filled_by(self):
         return self.__source_filled_by
-
 
     def get_source_publication_facts(self):
         return self.__source_publication_facts
 
-
     def get_text_from_source(self):
         return self.__text_from_source
-
 
     def get_source_repository_citations(self):
         return self.__source_repository_citations
 
-
     def get_user_reference_numbers(self):
         return self.__user_reference_numbers
-
 
     def get_automated_record_id(self):
         return self.__automated_record_id
 
-
     def get_change_date(self):
         return self.__change_date
-
 
     def get_notes(self):
         return self.__notes
 
-
     def get_multimedia_links(self):
         return self.__multimedia_links
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_data_tag(self, value):
         self.__data_tag = value
-
 
     def set_data_events(self, value):
         self.__data_events = value
 
-
     def set_data_responsible_agency(self, value):
         self.__data_responsible_agency = value
-
 
     def set_data_notes(self, value):
         self.__data_notes = value
 
-
     def set_source_originator(self, value):
         self.__source_originator = value
-
 
     def set_source_title(self, value):
         self.__source_title = value
 
-
     def set_source_filled_by(self, value):
         self.__source_filled_by = value
-
 
     def set_source_publication_facts(self, value):
         self.__source_publication_facts = value
 
-
     def set_text_from_source(self, value):
         self.__text_from_source = value
-
 
     def set_source_repository_citations(self, value):
         self.__source_repository_citations = value
 
-
     def set_user_reference_numbers(self, value):
         self.__user_reference_numbers = value
-
 
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_multimedia_links(self, value):
         self.__multimedia_links = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_data_tag(self):
         del self.__data_tag
-
 
     def del_data_events(self):
         del self.__data_events
 
-
     def del_data_responsible_agency(self):
         del self.__data_responsible_agency
-
 
     def del_data_notes(self):
         del self.__data_notes
 
-
     def del_source_originator(self):
         del self.__source_originator
-
 
     def del_source_title(self):
         del self.__source_title
 
-
     def del_source_filled_by(self):
         del self.__source_filled_by
-
 
     def del_source_publication_facts(self):
         del self.__source_publication_facts
 
-
     def del_text_from_source(self):
         del self.__text_from_source
-
 
     def del_source_repository_citations(self):
         del self.__source_repository_citations
 
-
     def del_user_reference_numbers(self):
         del self.__user_reference_numbers
-
 
     def del_automated_record_id(self):
         del self.__automated_record_id
 
-
     def del_change_date(self):
         del self.__change_date
-
 
     def del_notes(self):
         del self.__notes
 
-
     def del_multimedia_links(self):
         del self.__multimedia_links
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -2305,6 +2018,7 @@ class Source(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     multimedia_links = property(get_multimedia_links, set_multimedia_links, del_multimedia_links, "multimedia_links's docstring")
 
+
 class Submission(Record):
     def __init__(self):
         self.__reference = ""
@@ -2322,123 +2036,93 @@ class Submission(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_submitter_reference(self):
         return self.__submitter_reference
-
 
     def get_family_file(self):
         return self.__family_file
 
-
     def get_temple_code(self):
         return self.__temple_code
-
 
     def get_ancestors_generations(self):
         return self.__ancestors_generations
 
-
     def get_descendands_generations(self):
         return self.__descendands_generations
-
 
     def get_ordinance_process_flag(self):
         return self.__ordinance_process_flag
 
-
     def get_automaed_record_id(self):
         return self.__automaed_record_id
-
 
     def get_notes(self):
         return self.__notes
 
-
     def get_change_date(self):
         return self.__change_date
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_submitter_reference(self, value):
         self.__submitter_reference = value
-
 
     def set_family_file(self, value):
         self.__family_file = value
 
-
     def set_temple_code(self, value):
         self.__temple_code = value
-
 
     def set_ancestors_generations(self, value):
         self.__ancestors_generations = value
 
-
     def set_descendands_generations(self, value):
         self.__descendands_generations = value
-
 
     def set_ordinance_process_flag(self, value):
         self.__ordinance_process_flag = value
 
-
     def set_automaed_record_id(self, value):
         self.__automaed_record_id = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_submitter_reference(self):
         del self.__submitter_reference
-
 
     def del_family_file(self):
         del self.__family_file
 
-
     def del_temple_code(self):
         del self.__temple_code
-
 
     def del_ancestors_generations(self):
         del self.__ancestors_generations
 
-
     def del_descendands_generations(self):
         del self.__descendands_generations
-
 
     def del_ordinance_process_flag(self):
         del self.__ordinance_process_flag
 
-
     def del_automaed_record_id(self):
         del self.__automaed_record_id
-
 
     def del_notes(self):
         del self.__notes
 
-
     def del_change_date(self):
         del self.__change_date
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -2516,6 +2200,7 @@ class Submission(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     change_date = property(get_change_date, set_change_date, del_change_date, "change_date's docstring")
 
+
 class Submitter(Record):
     def __init__(self):
         self.__reference = ""
@@ -2532,111 +2217,84 @@ class Submitter(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_submitter_name(self):
         return self.__submitter_name
-
 
     def get_address(self):
         return self.__address
 
-
     def get_multimedia_links(self):
         return self.__multimedia_links
-
 
     def get_language_preferences(self):
         return self.__language_preferences
 
-
     def get_submitter_registered_rfn(self):
         return self.__submitter_registered_rfn
-
 
     def get_automated_record_id(self):
         return self.__automated_record_id
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_change_date(self):
         return self.__change_date
 
-
     def set_reference(self, value):
         self.__reference = value
-
 
     def set_submitter_name(self, value):
         self.__submitter_name = value
 
-
     def set_address(self, value):
         self.__address = value
-
 
     def set_multimedia_links(self, value):
         self.__multimedia_links = value
 
-
     def set_language_preferences(self, value):
         self.__language_preferences = value
-
 
     def set_submitter_registered_rfn(self, value):
         self.__submitter_registered_rfn = value
 
-
     def set_automated_record_id(self, value):
         self.__automated_record_id = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_change_date(self, value):
         self.__change_date = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_submitter_name(self):
         del self.__submitter_name
-
 
     def del_address(self):
         del self.__address
 
-
     def del_multimedia_links(self):
         del self.__multimedia_links
-
 
     def del_language_preferences(self):
         del self.__language_preferences
 
-
     def del_submitter_registered_rfn(self):
         del self.__submitter_registered_rfn
-
 
     def del_automated_record_id(self):
         del self.__automated_record_id
 
-
     def del_notes(self):
         del self.__notes
-
 
     def del_change_date(self):
         del self.__change_date
 
-    
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
         self.__reference = relevant_lines[0].pointer
@@ -2718,8 +2376,8 @@ class Submitter(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     change_date = property(get_change_date, set_change_date, del_change_date, "change_date's docstring")
 
-# Substructures
 
+# Substructures
 class AddressStructure(Record):
     def __init__(self):
         self.__address_line = ""
@@ -2739,147 +2397,111 @@ class AddressStructure(Record):
     def get_address_line(self):
         return self.__address_line
 
-
     def get_address_line_1(self):
         return self.__address_line1
-
 
     def get_address_line_2(self):
         return self.__address_line2
 
-
     def get_address_line_3(self):
         return self.__address_line3
-
 
     def get_address_city(self):
         return self.__address_city
 
-
     def get_address_state(self):
         return self.__address_state
-
 
     def get_address_postal_code(self):
         return self.__address_postal_code
 
-
     def get_address_country(self):
         return self.__address_country
-
 
     def get_phone_number(self):
         return self.__phone_number
 
-
     def get_address_email(self):
         return self.__address_email
-
 
     def get_address_fax(self):
         return self.__address_fax
 
-
     def get_address_web_page(self):
         return self.__address_web_page
-
 
     def set_address_line(self, value):
         self.__address_line = value
 
-
     def set_address_line_1(self, value):
         self.__address_line1 = value
-
 
     def set_address_line_2(self, value):
         self.__address_line2 = value
 
-
     def set_address_line_3(self, value):
         self.__address_line3 = value
-
 
     def set_address_city(self, value):
         self.__address_city = value
 
-
     def set_address_state(self, value):
         self.__address_state = value
-
 
     def set_address_postal_code(self, value):
         self.__address_postal_code = value
 
-
     def set_address_country(self, value):
         self.__address_country = value
-
 
     def set_phone_number(self, value):
         self.__phone_number = value
 
-
     def set_address_email(self, value):
         self.__address_email = value
-
 
     def set_address_fax(self, value):
         self.__address_fax = value
 
-
     def set_address_web_page(self, value):
         self.__address_web_page = value
-
 
     def del_address_line(self):
         del self.__address_line
 
-
     def del_address_line_1(self):
         del self.__address_line1
-
 
     def del_address_line_2(self):
         del self.__address_line2
 
-
     def del_address_line_3(self):
         del self.__address_line3
-
 
     def del_address_city(self):
         del self.__address_city
 
-
     def del_address_state(self):
         del self.__address_state
-
 
     def del_address_postal_code(self):
         del self.__address_postal_code
 
-
     def del_address_country(self):
         del self.__address_country
-
 
     def del_phone_number(self):
         del self.__phone_number
 
-
     def del_address_email(self):
         del self.__address_email
-
 
     def del_address_fax(self):
         del self.__address_fax
 
-
     def del_address_web_page(self):
         del self.__address_web_page
 
-    
     def parse_gedcom(self, gedcom_lines):
         valid_top_level_tags = [gedcom.tags.GEDCOM_TAG_ADDRESS, gedcom.tags.GEDCOM_TAG_PHONE, gedcom.tags.GEDCOM_TAG_EMAIL, gedcom.tags.GEDCOM_TAG_FAX, gedcom.tags.GEDCOM_TAG_WEB]
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines, valid_top_level_tags)
@@ -2954,6 +2576,7 @@ class AddressStructure(Record):
     address_fax = property(get_address_fax, set_address_fax, del_address_fax, "address_fax's docstring")
     address_web_page = property(get_address_web_page, set_address_web_page, del_address_web_page, "address_web_page's docstring")
 
+
 class ChangeDate(Record):
     def __init__(self):
         self.__date = ""
@@ -2964,38 +2587,29 @@ class ChangeDate(Record):
     def get_date(self):
         return self.__date
 
-
     def get_time(self):
         return self.__time
-
 
     def get_notes(self):
         return self.__notes
 
-
     def set_date(self, value):
         self.__date = value
-
 
     def set_time(self, value):
         self.__time = value
 
-
     def set_notes(self, value):
         self.__notes = value
-
 
     def del_date(self):
         del self.__date
 
-
     def del_time(self):
         del self.__time
 
-
     def del_notes(self):
         del self.__notes
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3017,7 +2631,6 @@ class ChangeDate(Record):
                     continue
         return len(relevant_lines)
 
-
     def get_gedcom_repr(self, level):
         gedcom_repr = "%s %s" % (level, gedcom.tags.GEDCOM_TAG_DATE_CHANGE)
         gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_DATE, self.__date)
@@ -3030,6 +2643,7 @@ class ChangeDate(Record):
     time = property(get_time, set_time, del_time, "time's docstring")
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
 
+
 class ChildToFamilyLink(Record):
     def __init__(self):
         self.__family_reference = ""
@@ -3041,50 +2655,38 @@ class ChildToFamilyLink(Record):
     def get_family_reference(self):
         return self.__family_reference
 
-
     def get_pedigree(self):
         return self.__pedigree
-
 
     def get_status(self):
         return self.__status
 
-
     def get_notes(self):
         return self.__notes
-
 
     def set_family_reference(self, value):
         self.__family_reference = value
 
-
     def set_pedigree(self, value):
         self.__pedigree = value
-
 
     def set_status(self, value):
         self.__status = value
 
-
     def set_notes(self, value):
         self.__notes = value
-
 
     def del_family_reference(self):
         del self.__family_reference
 
-
     def del_pedigree(self):
         del self.__pedigree
-
 
     def del_status(self):
         del self.__status
 
-
     def del_notes(self):
         del self.__notes
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3120,6 +2722,7 @@ class ChildToFamilyLink(Record):
     pedigree = property(get_pedigree, set_pedigree, del_pedigree, "pedigree's docstring")
     status = property(get_status, set_status, del_status, "status's docstring")
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
+
 
 class EventDetail(Record):
     def __init__(self):
@@ -3162,10 +2765,8 @@ class EventDetail(Record):
     def get_place_longitude(self):
         return self._place_longitude
 
-
     def get_place_notes(self):
         return self._place_notes
-
 
     def get_address(self):
         return self._address
@@ -3407,6 +3008,7 @@ class EventDetail(Record):
     sources = property(get_sources, set_sources, del_sources, "sources's docstring")
     multimedia_links = property(get_multimedia_links, set_multimedia_links, del_multimedia_links, "multimedia_links's docstring")
 
+
 class FamilyEventDetail(EventDetail):
     def __init__(self):
         self.__husband_age_at_event = ""
@@ -3416,26 +3018,20 @@ class FamilyEventDetail(EventDetail):
     def get_husband_age_at_event(self):
         return self.__husband_age_at_event
 
-
     def get_wife_age_at_event(self):
         return self.__wife_age_at_event
-
 
     def set_husband_age_at_event(self, value):
         self.__husband_age_at_event = value
 
-
     def set_wife_age_at_event(self, value):
         self.__wife_age_at_event = value
-
 
     def del_husband_age_at_event(self):
         del self.__husband_age_at_event
 
-
     def del_wife_age_at_event(self):
         del self.__wife_age_at_event
-
 
     def parse_gedcom(self, gedcom_lines):
         valid_top_level_tags = gedcom.tags.EVENT_DETAIL_TAGS + [gedcom.tags.GEDCOM_TAG_HUSBAND, gedcom.tags.GEDCOM_TAG_WIFE]
@@ -3472,6 +3068,7 @@ class FamilyEventDetail(EventDetail):
     husband_age_at_event = property(get_husband_age_at_event, set_husband_age_at_event, del_husband_age_at_event, "husband_age_at_event's docstring")
     wife_age_at_event = property(get_wife_age_at_event, set_wife_age_at_event, del_wife_age_at_event, "wife_age_at_event's docstring")
 
+
 class FamilyEventStructure(FamilyEventDetail):
     def __init__(self):
         self.__tag = ""
@@ -3482,38 +3079,29 @@ class FamilyEventStructure(FamilyEventDetail):
     def get_tag(self):
         return self.__tag
 
-
     def get_married_yes(self):
         return self.__married_yes
-
 
     def get_event_descriptor(self):
         return self.__event_descriptor
 
-
     def set_tag(self, value):
         self.__tag = value
-
 
     def set_married_yes(self, value):
         self.__married_yes = value
 
-
     def set_event_descriptor(self, value):
         self.__event_descriptor = value
-
 
     def del_tag(self):
         del self.__tag
 
-
     def del_married_yes(self):
         del self.__married_yes
 
-
     def del_event_descriptor(self):
         del self.__event_descriptor
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3551,6 +3139,7 @@ class FamilyEventStructure(FamilyEventDetail):
     married_yes = property(get_married_yes, set_married_yes, del_married_yes, "married_yes's docstring")
     event_descriptor = property(get_event_descriptor, set_event_descriptor, del_event_descriptor, "event_descriptor's docstring")
 
+
 class IndividualEventDetail(EventDetail):
     def __init__(self):
         self._age_at_event = ""
@@ -3559,14 +3148,11 @@ class IndividualEventDetail(EventDetail):
     def get_age_at_event(self):
         return self.__age_at_event
 
-
     def set_age_at_event(self, value):
         self.__age_at_event = value
 
-
     def del_age_at_event(self):
         del self.__age_at_event
-
 
     def parse_gedcom(self, gedcom_lines):
         parsed_lines = super().parse_gedcom(gedcom_lines)
@@ -3582,6 +3168,7 @@ class IndividualEventDetail(EventDetail):
         return gedcom_repr
     age_at_event = property(get_age_at_event, set_age_at_event, del_age_at_event, "age_at_event's docstring")
 
+
 class IndividualAttributeStructure(IndividualEventDetail):
     def __init__(self):
         self.__tag = ""
@@ -3592,38 +3179,29 @@ class IndividualAttributeStructure(IndividualEventDetail):
     def get_tag(self):
         return self.__tag
 
-
     def get_content(self):
         return self.__content
-
 
     def get_physical_description(self):
         return self.__physical_description
 
-
     def set_tag(self, value):
         self.__tag = value
-
 
     def set_content(self, value):
         self.__content = value
 
-
     def set_physical_description(self, value):
         self.__physical_description = value
-
 
     def del_tag(self):
         del self.__tag
 
-
     def del_content(self):
         del self.__content
 
-
     def del_physical_description(self):
         del self.__physical_description
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3670,6 +3248,7 @@ class IndividualAttributeStructure(IndividualEventDetail):
     content = property(get_content, set_content, del_content, "content's docstring")
     physical_description = property(get_physical_description, set_physical_description, del_physical_description, "physical_description's docstring")
 
+
 class IndividualEventStructure(IndividualEventDetail):
     def __init__(self):
         self.__tag = ""
@@ -3683,74 +3262,56 @@ class IndividualEventStructure(IndividualEventDetail):
     def get_tag(self):
         return self.__tag
 
-
     def get_birth_christening_yes(self):
         return self.__birth_christening_yes
-
 
     def get_birth_christening_family_reference(self):
         return self.__birth_christening_family_reference
 
-
     def get_death_yes(self):
         return self.__death_yes
-
 
     def get_adopting_family_reference(self):
         return self.__adopting_family_reference
 
-
     def get_adopting_parent(self):
         return self.__adopting_parent
-
 
     def set_tag(self, value):
         self.__tag = value
 
-
     def set_birth_christening_yes(self, value):
         self.__birth_christening_yes = value
-
 
     def set_birth_christening_family_reference(self, value):
         self.__birth_christening_family_reference = value
 
-
     def set_death_yes(self, value):
         self.__death_yes = value
-
 
     def set_adopting_family_reference(self, value):
         self.__adopting_family_reference = value
 
-
     def set_adopting_parent(self, value):
         self.__adopting_parent = value
-
 
     def del_tag(self):
         del self.__tag
 
-
     def del_birth_christening_yes(self):
         del self.__birth_christening_yes
-
 
     def del_birth_christening_family_reference(self):
         del self.__birth_christening_family_reference
 
-
     def del_death_yes(self):
         del self.__death_yes
-
 
     def del_adopting_family_reference(self):
         del self.__adopting_family_reference
 
-
     def del_adopting_parent(self):
         del self.__adopting_parent
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3813,6 +3374,7 @@ class IndividualEventStructure(IndividualEventDetail):
     adopting_family_reference = property(get_adopting_family_reference, set_adopting_family_reference, del_adopting_family_reference, "adopting_family_reference's docstring")
     adopting_parent = property(get_adopting_parent, set_adopting_parent, del_adopting_parent, "adopting_parent's docstring")
 
+
 class MultimediaLink(Record):
     def __init__(self):
         self.__reference = ""
@@ -3825,62 +3387,47 @@ class MultimediaLink(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_multimedia_file(self):
         return self.__multimedia_file
-
 
     def get_multimedia_format(self):
         return self.__multimedia_format
 
-
     def get_multimedia_type(self):
         return self.__multimedia_type
-
 
     def get_multimedia_title(self):
         return self.__multimedia_title
 
-
     def set_reference(self, value):
         self.__reference = value
-
 
     def set_multimedia_file(self, value):
         self.__multimedia_file = value
 
-
     def set_multimedia_format(self, value):
         self.__multimedia_format = value
-
 
     def set_multimedia_type(self, value):
         self.__multimedia_type = value
 
-
     def set_multimedia_title(self, value):
         self.__multimedia_title = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_multimedia_file(self):
         del self.__multimedia_file
-
 
     def del_multimedia_format(self):
         del self.__multimedia_format
 
-
     def del_multimedia_type(self):
         del self.__multimedia_type
 
-
     def del_multimedia_title(self):
         del self.__multimedia_title
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3918,6 +3465,7 @@ class MultimediaLink(Record):
     multimedia_type = property(get_multimedia_type, set_multimedia_type, del_multimedia_type, "multimedia_type's docstring")
     multimedia_title = property(get_multimedia_title, set_multimedia_title, del_multimedia_title, "multimedia_title's docstring")
 
+
 class NoteStructure(Record):
     def __init__(self):
         self.__reference = ""
@@ -3927,26 +3475,20 @@ class NoteStructure(Record):
     def get_reference(self):
         return self.__reference
 
-
     def get_text(self):
         return self.__text
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_text(self, value):
         self.__text = value
-
 
     def del_reference(self):
         del self.__reference
 
-
     def del_text(self):
         del self.__text
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -3968,6 +3510,7 @@ class NoteStructure(Record):
     reference = property(get_reference, set_reference, del_reference, "reference's docstring")
     text = property(get_text, set_text, del_text, "text's docstring")
 
+
 class PersonalNameStructure(Record):
     def __init__(self, variation=""):
         self.__name = ""
@@ -3988,158 +3531,119 @@ class PersonalNameStructure(Record):
     def get_name(self):
         return self.__name
 
-
     def get_name_type(self):
         return self.__name_type
-
 
     def get_variation(self):
         return self.__variation
 
-
     def get_name_piece_prefix(self):
         return self.__name_piece_prefix
-
 
     def get_name_piece_given(self):
         return self.__name_piece_given
 
-
     def get_name_piece_nick(self):
         return self.__name_piece_nick
-
 
     def get_name_piece_surname_prefix(self):
         return self.__name_piece_surname_prefix
 
-
     def get_name_piece_surname(self):
         return self.__name_piece_surname
-
 
     def get_name_piece_suffix(self):
         return self.__name_piece_suffix
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_sources(self):
         return self.__sources
 
-
     def get_phonetic_variations(self):
         return self.__phonetic_variations
-
 
     def get_romanized_variations(self):
         return self.__romanized_variations
 
-
     def set_name(self, value):
         self.__name = value
-
 
     def set_name_type(self, value):
         self.__name_type = value
 
-
     def set_variation(self, value):
         self.__variation = value
-
 
     def set_name_piece_prefix(self, value):
         self.__name_piece_prefix = value
 
-
     def set_name_piece_given(self, value):
         self.__name_piece_given = value
-
 
     def set_name_piece_nick(self, value):
         self.__name_piece_nick = value
 
-
     def set_name_piece_surname_prefix(self, value):
         self.__name_piece_surname_prefix = value
-
 
     def set_name_piece_surname(self, value):
         self.__name_piece_surname = value
 
-
     def set_name_piece_suffix(self, value):
         self.__name_piece_suffix = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_sources(self, value):
         self.__sources = value
-
 
     def set_phonetic_variations(self, value):
         self.__phonetic_variations = value
 
-
     def set_romanized_variations(self, value):
         self.__romanized_variations = value
-
 
     def del_name(self):
         del self.__name
 
-
     def del_name_type(self):
         del self.__name_type
-
 
     def del_variation(self):
         del self.__variation
 
-
     def del_name_piece_prefix(self):
         del self.__name_piece_prefix
-
 
     def del_name_piece_given(self):
         del self.__name_piece_given
 
-
     def del_name_piece_nick(self):
         del self.__name_piece_nick
-
 
     def del_name_piece_surname_prefix(self):
         del self.__name_piece_surname_prefix
 
-
     def del_name_piece_surname(self):
         del self.__name_piece_surname
-
 
     def del_name_piece_suffix(self):
         del self.__name_piece_suffix
 
-
     def del_notes(self):
         del self.__notes
-
 
     def del_sources(self):
         del self.__sources
 
-
     def del_phonetic_variations(self):
         del self.__phonetic_variations
 
-
     def del_romanized_variations(self):
         del self.__romanized_variations
-
     
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -4237,6 +3741,7 @@ class PersonalNameStructure(Record):
     phonetic_variations = property(get_phonetic_variations, set_phonetic_variations, del_phonetic_variations, "phonetic_variations's docstring")
     romanized_variations = property(get_romanized_variations, set_romanized_variations, del_romanized_variations, "romanized_variations's docstring")
 
+
 class SourceCitation(Record):
     def __init__(self):
         self.__pointer_source_record = False       
@@ -4260,158 +3765,119 @@ class SourceCitation(Record):
     def get_pointer_source_record(self):
         return self.__pointer_source_record
 
-
     def get_reference(self):
         return self.__reference
-
 
     def get_page(self):
         return self.__page
 
-
     def get_event(self):
         return self.__event
-
 
     def get_event_role(self):
         return self.__event_role
 
-
     def get_data(self):
         return self.__data
-
 
     def get_data_date(self):
         return self.__data_date
 
-
     def get_data_text(self):
         return self.__data_text
-
 
     def get_description(self):
         return self.__description
 
-
     def get_text(self):
         return self.__text
-
 
     def get_multimedia_link(self):
         return self.__multimedia_link
 
-
     def get_notes(self):
         return self.__notes
-
 
     def get_certainty_assessment(self):
         return self.__certainty_assessment
 
-
     def set_pointer_source_record(self, value):
         self.__pointer_source_record = value
-
 
     def set_reference(self, value):
         self.__reference = value
 
-
     def set_page(self, value):
         self.__page = value
-
 
     def set_event(self, value):
         self.__event = value
 
-
     def set_event_role(self, value):
         self.__event_role = value
-
 
     def set_data(self, value):
         self.__data = value
 
-
     def set_data_date(self, value):
         self.__data_date = value
-
 
     def set_data_text(self, value):
         self.__data_text = value
 
-
     def set_description(self, value):
         self.__description = value
-
 
     def set_text(self, value):
         self.__text = value
 
-
     def set_multimedia_link(self, value):
         self.__multimedia_link = value
-
 
     def set_notes(self, value):
         self.__notes = value
 
-
     def set_certainty_assessment(self, value):
         self.__certainty_assessment = value
-
 
     def del_pointer_source_record(self):
         del self.__pointer_source_record
 
-
     def del_reference(self):
         del self.__reference
-
 
     def del_page(self):
         del self.__page
 
-
     def del_event(self):
         del self.__event
-
 
     def del_event_role(self):
         del self.__event_role
 
-
     def del_data(self):
         del self.__data
-
 
     def del_data_date(self):
         del self.__data_date
 
-
     def del_data_text(self):
         del self.__data_text
-
 
     def del_description(self):
         del self.__description
 
-
     def del_text(self):
         del self.__text
-
 
     def del_multimedia_link(self):
         del self.__multimedia_link
 
-
     def del_notes(self):
         del self.__notes
 
-
     def del_certainty_assessment(self):
         del self.__certainty_assessment
-
     
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)
@@ -4482,7 +3948,7 @@ class SourceCitation(Record):
         return len(relevant_lines)
 
     def get_gedcom_repr(self, level):
-        if self.__pointer_source_record:
+        if self.__pointer_source_record or self.__reference:
             gedcom_repr = "%s %s %s" % (level, gedcom.tags.GEDCOM_TAG_SOURCE, self.__reference)
             if self.__page:
                 gedcom_repr = "%s\n%s %s %s" % (gedcom_repr, level+1, gedcom.tags.GEDCOM_TAG_PAGE, self.__page)
@@ -4521,6 +3987,7 @@ class SourceCitation(Record):
     notes = property(get_notes, set_notes, del_notes, "notes's docstring")
     certainty_assessment = property(get_certainty_assessment, set_certainty_assessment, del_certainty_assessment, "certainty_assessment's docstring")
 
+
 class SpouseToFamilyLink(Record):
     def __init__(self):
         self.__family_reference = ""
@@ -4530,26 +3997,20 @@ class SpouseToFamilyLink(Record):
     def get_family_reference(self):
         return self.__family_reference
 
-
     def get_notes(self):
         return self.__notes
-
 
     def set_family_reference(self, value):
         self.__family_reference = value
 
-
     def set_notes(self, value):
         self.__notes = value
-
 
     def del_family_reference(self):
         del self.__family_reference
 
-
     def del_notes(self):
         del self.__notes
-
 
     def parse_gedcom(self, gedcom_lines):
         relevant_lines = gf.get_gedcom_relevant_lines(gedcom_lines)

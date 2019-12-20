@@ -1,9 +1,11 @@
 import unittest
 import genealogy
-from gedcom.structures import Individual, Family
+from gedcom.structures import Individual, Family, Note, NoteStructure, Source,\
+    SourceCitation, Multimedia, MultimediaLink
 from genealogy import Genealogy
 import os.path
 from tests.gedcom_tests import file_to_string
+
 
 class GenealogyTests(unittest.TestCase):
     empty_gen_gedcom = ("0 HEAD\n"
@@ -286,8 +288,8 @@ class GenealogyTests(unittest.TestCase):
         g = Genealogy(input_filepath)
         compare_file = file_to_string(compare_filepath)
         self.assertEqual(compare_file, g.get_gedcom())
-    
-    
+
+
     def test_add_disconnected_genealogy(self):
         # 1. load sample family GEDCOM file as a Genealogy named sample_genealogy
         # 2. load again sample family GEDCOM file as another Genealogy named sample_genealogy_2
@@ -298,6 +300,48 @@ class GenealogyTests(unittest.TestCase):
         sample_genealogy.add_disconnected_genealogy(sample_genealogy_2)
         compare_genealogy_file = file_to_string(os.path.join(os.path.abspath(__file__), "../gedcom_files/sample_family_doubled.ged"))
         self.assertEqual(compare_genealogy_file, sample_genealogy.get_gedcom())
+
+    
+    def test_create_and_delete_note(self):
+        sample_genealogy = self.load_sample_family()
+        sample_genealogy_gedcom = sample_genealogy.get_gedcom()
+        new_note = Note()
+        new_note.text = "Pigen Test Note"
+        new_note_ref = sample_genealogy.add_new_note(new_note)
+        new_note_structure = NoteStructure()
+        new_note_structure.reference = new_note_ref
+        indi = sample_genealogy.get_individual_by_ref("@I1@")
+        indi.notes.append(new_note_structure)
+        sample_genealogy.remove_note(new_note)
+        self.assertEqual(sample_genealogy_gedcom, sample_genealogy.get_gedcom())
+        
+
+    def test_create_and_delete_source(self):
+        sample_genealogy = self.load_sample_family()
+        sample_genealogy_gedcom = sample_genealogy.get_gedcom()
+        new_source = Source()
+        new_source.source_title = "Pigen Test Source"
+        new_source_ref = sample_genealogy.add_new_source(new_source)
+        new_source_citation = SourceCitation()
+        new_source_citation.reference = new_source_ref
+        indi = sample_genealogy.get_individual_by_ref("@I1@")
+        indi.sources.append(new_source_citation)
+        sample_genealogy.remove_source(new_source)      
+        self.assertEqual(sample_genealogy_gedcom, sample_genealogy.get_gedcom())
+        
+
+    def test_create_and_delete_multimedia(self):
+        sample_genealogy = self.load_sample_family()
+        sample_genealogy_gedcom = sample_genealogy.get_gedcom()
+        new_multimedia = Multimedia()
+        new_multimedia.file_title = "Pigen Test Multimedia"
+        new_mult_ref = sample_genealogy.add_new_multimedia(new_multimedia)
+        new_multimedia_link = MultimediaLink()
+        new_multimedia_link.reference = new_mult_ref
+        indi = sample_genealogy.get_individual_by_ref("@I1@")
+        indi.multimedia_links.append(new_multimedia_link)
+        sample_genealogy.remove_multimedia(new_multimedia)      
+        self.assertEqual(sample_genealogy_gedcom, sample_genealogy.get_gedcom())
 
 
 if __name__ == "__main__":
